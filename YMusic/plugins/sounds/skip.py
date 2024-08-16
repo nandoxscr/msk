@@ -16,10 +16,6 @@ SKIP_COMMAND = ["SKIP"]
 PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
 
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
-
 @app.on_message((filters.command(SKIP_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _aSkip(_, message):
     chat_id = message.chat.id
@@ -30,7 +26,23 @@ async def _aSkip(_, message):
         administrators.append(admin)
 
     if (message.from_user.id in SUDOERS) or (message.from_user.id in [admin.user.id for admin in administrators]):
-        m = await message.reply_text("Mencoba melewati lagu saat ini...", disable_web_page_preview=True,)
+        # Periksa apakah ada lagu yang sedang diputar
+        if is_queue_empty(chat_id):
+            await message.reply_text("Tidak ada lagu yang sedang diputar untuk di-skip.")
+            return
+
+        # Periksa apakah bot sedang dalam panggilan suara
+        try:
+            call_active = await call.get_call(chat_id)
+            if not call_active:
+                await message.reply_text("Tidak sedang dalam panggilan suara.")
+                return
+        except Exception as e:
+            await message.reply_text("Tidak dapat memeriksa status panggilan suara.")
+            print(f"Error checking call status: {e}")
+            return
+
+        m = await message.reply_text("Mencoba melewati lagu saat ini...")
         
         try:
             result = await _skip(chat_id)
@@ -42,7 +54,13 @@ async def _aSkip(_, message):
                     await m.edit("Terjadi kesalahan saat melewati lagu.")
             elif isinstance(result, list):
                 title, duration, link, _ = result
-                await m.edit(f"Berhasil melewati lagu. Sekarang memutar:\n\nJudul: {title}\nDurasi: {duration}\nLink: {link}")
+                await m.edit(
+                    f"Berhasil melewati lagu. Sekarang memutar:\n\n"
+                    f"Judul: {title}\n"
+                    f"Durasi: {duration}\n"
+                    f"Link: {link}",
+                    disable_web_page_preview=True  # Menonaktifkan preview web
+                )
             else:
                 await m.edit("Terjadi kesalahan yang tidak terduga saat melewati lagu.")
         
@@ -53,9 +71,3 @@ async def _aSkip(_, message):
     else:
         await message.reply_text("Maaf, hanya admin dan SUDOERS yang dapat melewati lagu.")
         
-        
-async def stop(chat_id):
-    try:
-        await call.leave_call(chat_id)
-    except Exception as e:
-        logger.error(f"Error leaving call for chat_id {chat_id}: {e}")
