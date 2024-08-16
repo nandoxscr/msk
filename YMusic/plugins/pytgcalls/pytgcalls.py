@@ -1,8 +1,8 @@
 from pytgcalls import PyTgCalls, filters
 from pytgcalls.types import Update, MediaStream
-from pytgcalls import StreamType
-from pytgcalls.types import AudioPiped
-from pytgcalls.types import AudioParameters
+from pytgcalls.types.input_stream import AudioPiped
+from pytgcalls.types.input_stream.quality import HighQualityAudio
+
 
 from YMusic import call, app
 from YMusic.utils.queue import QUEUE, get_queue, clear_queue, pop_an_item, is_queue_empty
@@ -36,11 +36,8 @@ async def _skip(chat_id):
             chat_id,
             AudioPiped(
                 audio_file,
-                AudioParameters(
-                    bitrate=48000,
-                ),
+                HighQualityAudio(),
             ),
-            stream_type=StreamType().local_stream
         )
         return [next_song['title'], next_song['duration'], next_song['link'], time.time()]
     except Exception as e:
