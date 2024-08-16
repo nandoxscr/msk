@@ -1,7 +1,8 @@
 from pytgcalls import PyTgCalls, filters
 from pytgcalls.types import Update, MediaStream
-from pytgcalls.types.input_stream import AudioPiped
-from pytgcalls.types.input_stream.quality import HighQualityAudio
+
+from pytgcalls import PyTgCalls
+from pytgcalls.types import AudioPiped
 
 
 from YMusic import call, app
@@ -34,10 +35,7 @@ async def _skip(chat_id):
         # )
         await call.join_group_call(
             chat_id,
-            AudioPiped(
-                audio_file,
-                HighQualityAudio(),
-            ),
+            AudioPiped(audio_file)
         )
         return [next_song['title'], next_song['duration'], next_song['link'], time.time()]
     except Exception as e:

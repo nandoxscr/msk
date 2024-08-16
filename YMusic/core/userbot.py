@@ -1,21 +1,18 @@
 from YMusic import call
 from pytgcalls.types import MediaStream
 
-from pytgcalls.types.input_stream import AudioPiped
-from pytgcalls.types.input_stream.quality import HighQualityAudio
+from pytgcalls import PyTgCalls
+from pytgcalls.types import AudioPiped
 
 
 audio_file = "http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4"
 
 
-async def playAudio(chat_id, audio_file=audio_file):
+async def playAudioAP(chat_id, audio_file=audio_file):
     try:
         await call.join_group_call(
             chat_id,
-            AudioPiped(
-                audio_file,
-                HighQualityAudio(),
-            ),
+            AudioPiped(audio_file)
         )
         return True, None
     except Exception as e:
