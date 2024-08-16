@@ -5,7 +5,7 @@ import config
 import os
 import asyncio
 
-async def searchYt(query, chat_id):
+async def searchYt(query):
     try:
         videosSearch = VideosSearch(query, limit=1)
         result = videosSearch.result()
@@ -15,14 +15,11 @@ async def searchYt(query, chat_id):
         duration = result["result"][0]["duration"]
         link = result["result"][0]["link"]
         return title, duration, link
-    except asyncio.CancelledError:
-        print(f"Search cancelled for chat_id: {chat_id}")
-        return None, None, None
     except Exception as e:
         print(f"Error in searchYt: {e}")
         return None, None, None
 
-async def download_audio(link, file_name, chat_id):
+async def download_audio(link, file_name):
     output_path = os.path.join(os.getcwd(), "downloads")
     if not os.path.exists(output_path):
         os.makedirs(output_path)
@@ -58,19 +55,17 @@ async def download_audio(link, file_name, chat_id):
             duration = info.get('duration')
             title = info.get('title')
             
-            # Simulate a long download process
-            for i in range(10):
-                await asyncio.sleep(1)
-                if asyncio.current_task().cancelled():
-                    print(f"Download cancelled for chat_id: {chat_id}")
-                    return None, None, None
+            # Periksa pembatalan sebelum mulai mengunduh
+            if asyncio.current_task().cancelled():
+                print("Download cancelled")
+                return None, None, None
             
             ydl.download([link])
         
         output_file = os.path.join(output_path, f'{file_name}.mp3')
         return output_file, title, duration
     except asyncio.CancelledError:
-        print(f"Download cancelled for chat_id: {chat_id}")
+        print("Download cancelled")
         return None, None, None
     except Exception as e:
         print(f"Error in download_audio: {e}")

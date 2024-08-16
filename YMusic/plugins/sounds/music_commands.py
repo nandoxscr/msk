@@ -19,6 +19,7 @@ PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
 ONGOING_PROCESSES = defaultdict(lambda: None)
 
+
 @app.on_message((filters.command(PLAY_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _aPlay(_, message):
     start_time = time.time()
@@ -28,8 +29,8 @@ async def _aPlay(_, message):
         await message.reply_text("Proses lain sedang berlangsung. Gunakan .cancel untuk membatalkannya terlebih dahulu.")
         return
 
-    ONGOING_PROCESSES[chat_id] = "play"
-    
+    ONGOING_PROCESSES[chat_id] = asyncio.current_task()
+
     async def process_audio(title, duration, audio_file, link):
         queue_num = add_to_queue(chat_id, title[:19], duration, audio_file, link)
         if get_queue_length(chat_id) > 1:
@@ -46,47 +47,43 @@ async def _aPlay(_, message):
                     disable_web_page_preview=True,
                 )
 
-    if message.reply_to_message and (message.reply_to_message.audio or message.reply_to_message.voice):
-        m = await message.reply_text("Tunggu...Saya sedang memproses audio Anda....")
-        audio_file = await message.reply_to_message.download()
-        title = message.reply_to_message.audio.title if message.reply_to_message.audio else "Voice Message"
-        duration = message.reply_to_message.audio.duration if message.reply_to_message.audio else 0
-        link = message.reply_to_message.link
-        await process_audio(title, duration, audio_file, link)
-    
-    elif len(message.command) < 2:
-        await message.reply_text("Siapa yang akan menyebutkan nama lagunya?? 🤔")
-    
-    else:
-        m = await message.reply_text("Tunggu...Saya sedang mencari lagu Anda....")
-        query = message.text.split(maxsplit=1)[1]
-        try:
+    try:
+        if message.reply_to_message and (message.reply_to_message.audio or message.reply_to_message.voice):
+            m = await message.reply_text("Tunggu...Saya sedang memproses audio Anda....")
+            audio_file = await message.reply_to_message.download()
+            title = message.reply_to_message.audio.title if message.reply_to_message.audio else "Voice Message"
+            duration = message.reply_to_message.audio.duration if message.reply_to_message.audio else 0
+            link = message.reply_to_message.link
+            await process_audio(title, duration, audio_file, link)
+        
+        elif len(message.command) < 2:
+            await message.reply_text("Siapa yang akan menyebutkan nama lagunya?? 🤔")
+        
+        else:
+            m = await message.reply_text("Tunggu...Saya sedang mencari lagu Anda....")
+            query = message.text.split(maxsplit=1)[1]
+            
             title, duration, link = await searchYt(query)
             if not title:
-                ONGOING_PROCESSES[chat_id] = None
                 return await m.edit("Tidak ada hasil ditemukan")
-            
-            if ONGOING_PROCESSES[chat_id] is None:
-                return await m.edit("Proses dibatalkan.")
             
             await m.edit("Tunggu...Saya sedang mengunduh lagu Anda....")
             file_name = f"{title[:50]}"
             audio_file, downloaded_title, audio_duration = await download_audio(link, file_name)
             
-            if ONGOING_PROCESSES[chat_id] is None:
-                return await m.edit("Proses dibatalkan.")
-            
             if not audio_file:
-                ONGOING_PROCESSES[chat_id] = None
                 return await m.edit("Gagal mengunduh audio. Silakan coba lagi.")
             
             await process_audio(downloaded_title, audio_duration, audio_file, link)
-        
-        except Exception as e:
-            await message.reply_text(f"Error:- <code>{e}</code>")
-        finally:
-            ONGOING_PROCESSES[chat_id] = None
 
+    except asyncio.CancelledError:
+        await message.reply_text("Proses dibatalkan.")
+    except Exception as e:
+        await message.reply_text(f"Error:- <code>{e}</code>")
+    finally:
+        ONGOING_PROCESSES[chat_id] = None
+        
+        
 @app.on_message((filters.command(PLAYLIST_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _playlist(_, message):
     chat_id = message.chat.id
@@ -116,7 +113,13 @@ async def _cancel(_, message):
         await message.reply_text("Tidak ada proses yang sedang berlangsung untuk dibatalkan.")
         return
 
+    task = ONGOING_PROCESSES[chat_id]
+    if isinstance(task, asyncio.Task) and not task.done():
+        task.cancel()
+        await message.reply_text("Proses dibatalkan.")
+    else:
+        await message.reply_text("Tidak dapat membatalkan proses saat ini.")
+    
     ONGOING_PROCESSES[chat_id] = None
-    await message.reply_text("Proses dibatalkan.")
 
 # Fungsi tambahan jika diperlukan bisa ditambahkan di sini
