@@ -1,4 +1,4 @@
-from YMusic import app, call
+from YMusic import app
 from YMusic.utils.queue import QUEUE, pop_an_item, get_queue, clear_queue, is_queue_empty
 from YMusic.utils.loop import get_loop
 from YMusic.misc import SUDOERS
@@ -29,17 +29,6 @@ async def _aSkip(_, message):
         # Periksa apakah ada lagu yang sedang diputar
         if is_queue_empty(chat_id):
             await message.reply_text("Tidak ada lagu yang sedang diputar untuk di-skip.")
-            return
-
-        # Periksa apakah bot sedang dalam panggilan suara
-        try:
-            call_active = await call.get_call(chat_id)
-            if not call_active:
-                await message.reply_text("Tidak sedang dalam panggilan suara.")
-                return
-        except Exception as e:
-            await message.reply_text("Tidak dapat memeriksa status panggilan suara.")
-            print(f"Error checking call status: {e}")
             return
 
         m = await message.reply_text("Mencoba melewati lagu saat ini...")
