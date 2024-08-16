@@ -1,6 +1,7 @@
 from YMusic import call
 from pytgcalls.types import MediaStream
-from pytgcalls.types.input_stream import InputAudioStream
+from pytgcalls import StreamType
+from pytgcalls.types import AudioPiped
 from pytgcalls.types import AudioParameters
 
 
@@ -9,14 +10,15 @@ audio_file = "http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4"
 
 async def playAudioAP(chat_id, audio_file=audio_file):
     try:
-        await call.play(
+        await call.join_group_call(
             chat_id,
-            InputAudioStream(
+            AudioPiped(
                 audio_file,
                 AudioParameters(
                     bitrate=48000,
                 ),
             ),
+            stream_type=StreamType().local_stream
         )
         return True, None
     except Exception as e:

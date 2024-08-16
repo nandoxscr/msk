@@ -1,6 +1,7 @@
 from pytgcalls import PyTgCalls, filters
 from pytgcalls.types import Update, MediaStream
-from pytgcalls.types.input_stream import InputAudioStream
+from pytgcalls import StreamType
+from pytgcalls.types import AudioPiped
 from pytgcalls.types import AudioParameters
 
 from YMusic import call, app
@@ -31,14 +32,15 @@ async def _skip(chat_id):
                 # video_flags=MediaStream.Flags.IGNORE,
             # ),
         # )
-        await call.play(
+        await call.join_group_call(
             chat_id,
-            InputAudioStream(
-                next_song['audio_file'],
+            AudioPiped(
+                audio_file,
                 AudioParameters(
                     bitrate=48000,
                 ),
             ),
+            stream_type=StreamType().local_stream
         )
         return [next_song['title'], next_song['duration'], next_song['link'], time.time()]
     except Exception as e:
