@@ -18,7 +18,7 @@ async def _skip(chat_id):
     pop_an_item(chat_id)
     if is_queue_empty(chat_id):
         print("queue empty 2")
-        return None
+        return 1
 
     next_song = QUEUE[chat_id][0]
     try:

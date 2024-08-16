@@ -2,8 +2,9 @@ from YMusic import app
 from YMusic.utils.queue import QUEUE, pop_an_item, get_queue, clear_queue, is_queue_empty
 from YMusic.utils.loop import get_loop
 from YMusic.misc import SUDOERS
-from YMusic.plugins.pytgcalls.pytgcalls import _skip
+from YMusic.plugins.pytgcalls.pytgcalls import _skip, stop
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
+from YMusic.utils.utils import clear_downloads_cache
 
 from pytgcalls.types import MediaStream
 from pyrogram import filters
@@ -33,10 +34,11 @@ async def _aSkip(_, message):
         await stop_play_time(chat_id)
         try:
             result = await _skip(chat_id)
-            
             if isinstance(result, int):
                 if result == 1:
                     await m.edit("Antrian kosong. Meninggalkan obrolan suara...")
+                    await stop(chat_id)
+                    clear_downloads_cache()
                 else:
                     await m.edit("Terjadi kesalahan saat melewati lagu.")
             elif isinstance(result, list):
