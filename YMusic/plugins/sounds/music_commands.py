@@ -42,7 +42,7 @@ async def _aPlay(_, message):
                 await m.edit(Text)
             else:
                 finish_time = time.time()
-                start_play_time(chat_id)
+                await start_play_time(chat_id)
                 total_time_taken = str(int(finish_time - start_time)) + "s"
                 await m.edit(
                     f"Saya sedang memutar lagu Anda sekarang\n\nNama Lagu:- [{title[:19]}]({link})\nDurasi:- {duration}\nWaktu yang dibutuhkan untuk memutar:- {total_time_taken}",

@@ -41,13 +41,13 @@ async def handler(client: PyTgCalls, update: Update):
         if is_queue_empty(chat_id):
             await stop(chat_id)
             clear_downloads_cache()
-            stop_play_time(chat_id)
+            await stop_play_time(chat_id)
             await app.send_message(chat_id, "Semua lagu telah diputar. Meninggalkan obrolan suara dan membersihkan cache.")
         else:
             result = await _skip(chat_id)
             if isinstance(result, list):
                 title, duration, link, _ = result
-                start_play_time(chat_id)
+                await start_play_time(chat_id)
                 await app.send_message(
                     chat_id,
                     f"Memutar lagu berikutnya:\n\nJudul: {title}\nDurasi: {duration}\nLink: {link}"
@@ -55,13 +55,13 @@ async def handler(client: PyTgCalls, update: Update):
             else:
                 await app.send_message(chat_id, "Tidak dapat memutar lagu berikutnya. Meninggalkan obrolan suara.")
                 await stop(chat_id)
-                stop_play_time(chat_id)
+                await stop_play_time(chat_id)
                 clear_downloads_cache()
     except Exception as e:
         print(f"Error in stream_end handler: {e}")
         await app.send_message(chat_id, "Terjadi kesalahan saat mencoba memutar lagu berikutnya. Meninggalkan obrolan suara.")
         await stop(chat_id)
-        stop_play_time(chat_id)
+        await stop_play_time(chat_id)
         clear_downloads_cache()
 
 async def stop(chat_id):

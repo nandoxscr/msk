@@ -33,7 +33,7 @@ async def _aSkip(_, message):
             return
 
         m = await message.reply_text("Mencoba melewati lagu saat ini...")
-        stop_play_time(chat_id)
+        await stop_play_time(chat_id)
         try:
             result = await _skip(chat_id)
             
@@ -44,7 +44,7 @@ async def _aSkip(_, message):
                     await m.edit("Terjadi kesalahan saat melewati lagu.")
             elif isinstance(result, list):
                 title, duration, link, _ = result
-                start_play_time(chat_id)
+                await start_play_time(chat_id)
                 await m.edit(
                     f"Berhasil melewati lagu. Sekarang memutar:\n\n"
                     f"Judul: {title}\n"
