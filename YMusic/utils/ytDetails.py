@@ -28,7 +28,7 @@ async def download_audio(link, file_name):
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'aac',
+            'preferredcodec': 'mp3',
             'preferredquality': '320',
         }, {
             'key': 'FFmpegMetadata',
@@ -61,7 +61,7 @@ async def download_audio(link, file_name):
             
             ydl.download([link])
         
-        output_file = os.path.join(output_path, f'{file_name}.aac')
+        output_file = os.path.join(output_path, f'{file_name}.mp3')
         return output_file, title, duration
     except asyncio.CancelledError:
         print("Download cancelled")
