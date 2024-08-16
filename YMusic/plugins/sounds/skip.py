@@ -1,29 +1,18 @@
-from httpx import delete
 from YMusic import app, call
-from YMusic.core import userbot
-from YMusic.utils.queue import QUEUE, pop_an_item, get_queue, clear_queue
+from YMusic.utils.queue import QUEUE, pop_an_item, get_queue, clear_queue, is_queue_empty
 from YMusic.utils.loop import get_loop
 from YMusic.misc import SUDOERS
 
 from pytgcalls.types import MediaStream
-
-# from pytgcalls.types.input_stream import AudioPiped
-# from pytgcalls.types.input_stream.quality import HighQualityAudio
-
-
 from pyrogram import filters
 from pyrogram.enums import ChatMembersFilter
 
 import time
-
 import config
 
 SKIP_COMMAND = ["SKIP"]
-
 PREFIX = config.PREFIX
-
 RPREFIX = config.RPREFIX
-
 
 @app.on_message((filters.command(SKIP_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _aSkip(_, message):
@@ -32,83 +21,64 @@ async def _aSkip(_, message):
 
     # Get administrators
     administrators = []
-    async for m in app.get_chat_members(
-        chat_id, filter=ChatMembersFilter.ADMINISTRATORS
-    ):
+    async for m in app.get_chat_members(chat_id, filter=ChatMembersFilter.ADMINISTRATORS):
         administrators.append(m)
 
-    if (message.from_user.id) in SUDOERS or (message.from_user.id) in [
-        admin.user.id for admin in administrators
-    ]:
-        m = await message.reply_text("Trying to skip the current song...")
+    if (message.from_user.id in SUDOERS) or (message.from_user.id in [admin.user.id for admin in administrators]):
+        m = await message.reply_text("Mencoba melewati lagu saat ini...")
         loop = await get_loop(chat_id)
         if loop != 0:
-            return await m.edit_text(
-                f"Loop is enabled for the current song. Please disable it with {PREFIX}endloop to skip the song."
-            )
-        if chat_id in QUEUE:
-            chat_queue = get_queue(chat_id)
-            if len(chat_queue) == 1:
-                clear_queue(chat_id)
-                await stop(chat_id)
-                await m.edit_text(
-                    f"There is no next track. I'm leaving the voice chat..."
-                )
-                return
-            try:
-                title = chat_queue[1][1]
-                duration = chat_queue[1][2]
-                songlink = chat_queue[1][3]
-                link = chat_queue[1][4]
-                await call.play(
-                    chat_id,
-                    MediaStream(
-                        songlink,
-                        video_flags=MediaStream.Flags.AUTO_DETECT,
-                    ),
-                )
-                finish_time = time.time()
-                pop_an_item(chat_id)
-                total_time_taken = str(int(start_time - finish_time)) + "s"
-                await m.delete()
-                await app.send_message(
-                    chat_id,
-                    f"Playing Your Song\n\nSongName:- [{title}]({link})\nDuration:- {duration}\nTime taken to play:- {total_time_taken}",
-                    disable_web_page_preview=True,
-                )
-                # return [title, duration, link, finish_time]
-            except Exception as e:
-                await m.delete()
-                return await app.send_message(chat_id, f"Error:- <code>{e}</code>")
-        else:
-            clear_queue(chat_id)
+            return await m.edit_text(f"Loop diaktifkan untuk lagu saat ini. Harap nonaktifkan dengan {PREFIX}endloop untuk melewati lagu.")
+        
+        if is_queue_empty(chat_id):
             await stop(chat_id)
-            return await m.edit_text("Empty.....")
+            await m.edit_text("Antrian kosong. Saya meninggalkan obrolan suara...")
+            return
+
+        try:
+            pop_an_item(chat_id)  # Remove current song
+            if is_queue_empty(chat_id):
+                await stop(chat_id)
+                await m.edit_text("Tidak ada lagu berikutnya. Saya meninggalkan obrolan suara...")
+                return
+
+            next_song = get_queue(chat_id)[0]
+            title, duration, songlink, link = next_song[1], next_song[2], next_song[3], next_song[4]
+            
+            await call.play(
+                chat_id,
+                MediaStream(
+                    songlink,
+                    video_flags=MediaStream.Flags.AUTO_DETECT,
+                ),
+            )
+            finish_time = time.time()
+            total_time_taken = str(int(finish_time - start_time)) + "s"
+            await m.edit_text(
+                f"Memutar lagu Anda\n\nNama Lagu:- [{title}]({link})\nDurasi:- {duration}\nWaktu yang dibutuhkan untuk memutar:- {total_time_taken}",
+                disable_web_page_preview=True,
+            )
+        except Exception as e:
+            await m.edit_text(f"Error:- <code>{e}</code>")
     else:
-        return await message.reply_text(
-            "You idiots... (Forgive me for saying a little bit out of anger) That's why you don't have to tell the admins...."
-        )
+        await message.reply_text("Maaf, hanya admin dan SUDOERS yang dapat melewati lagu.")
 
 @app.on_message(filters.command("queue", [PREFIX, RPREFIX]) & filters.group)
 async def _queue(_, message):
     chat_id = message.chat.id
-    if chat_id in QUEUE:
+    if not is_queue_empty(chat_id):
         chat_queue = get_queue(chat_id)
         if len(chat_queue) == 1:
-            await message.reply_text(
-                f"Queue is empty"
-            )
+            await message.reply_text("Antrian kosong")
             return
         queue = chat_queue[1:]
-        output = "**Queue:**\n"
+        output = "**Antrian:**\n"
         for i, item in enumerate(queue):
-            title = item[1]
-            duration = item[2]
-            link = item[4]
+            title, duration, link = item[1], item[2], item[4]
             output += f"{i + 1}. [{title}]({link}) - {duration}\n"
         await message.reply_text(output, disable_web_page_preview=True)
     else:
-        await message.reply_text("Queue is empty")
+        await message.reply_text("Antrian kosong")
 
 async def stop(chat_id):
     try:

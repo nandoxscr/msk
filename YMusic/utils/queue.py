@@ -8,24 +8,26 @@ def add_to_queue(chat_id, title, duration, audio_file, link):
 
 def get_queue(chat_id):
     if chat_id in QUEUE:
-        chat_queue = QUEUE[chat_id]
-        return chat_queue
+        return QUEUE[chat_id]
     else:
-        return 0
-
+        return []
 
 def pop_an_item(chat_id):
-    if chat_id in QUEUE:
-        chat_queue = QUEUE[chat_id]
-        chat_queue.pop(0)
-        return 1
-    else:
-        return 0
-
+    if chat_id in QUEUE and QUEUE[chat_id]:
+        QUEUE[chat_id].pop(0)
+        if not QUEUE[chat_id]:
+            del QUEUE[chat_id]
+        return True
+    return False
 
 def clear_queue(chat_id):
     if chat_id in QUEUE:
-        QUEUE.pop(chat_id)
-        return 1
-    else:
-        return 0
+        del QUEUE[chat_id]
+        return True
+    return False
+
+def is_queue_empty(chat_id):
+    return chat_id not in QUEUE or not QUEUE[chat_id]
+
+def get_queue_length(chat_id):
+    return len(QUEUE.get(chat_id, []))
