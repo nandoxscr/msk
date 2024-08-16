@@ -30,23 +30,11 @@ async def download_audio(link, file_name):
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             'preferredquality': '320',
-        }, {
-            'key': 'FFmpegMetadata',
-            'add_metadata': True,
         }],
         'outtmpl': os.path.join(output_path, f'{file_name}.%(ext)s'),
         'cookiefile': config.COOK_PATH,
-        'ffmpeg_location': '/usr/bin/ffmpeg',
-        'postprocessor_args': [
-            '-acodec', 'aac',
-            '-b:a', '320k',
-            '-ar', '48000',
-            '-ac', '2',
-            '-af', 'acompressor=threshold=-10dB:ratio=4:attack=200:release=1000,volume=2dB',
-        ],
-        'prefer_ffmpeg': True,
-        'keepvideo': False,
-        'verbose': False,
+        'ffmpeg_location': '/usr/bin/ffmpeg', 
+        'verbose': True, 
     }
 
     try:
@@ -62,12 +50,14 @@ async def download_audio(link, file_name):
             ydl.download([link])
         
         output_file = os.path.join(output_path, f'{file_name}.mp3')
+        if not os.path.exists(output_file):
+            raise Exception(f"File tidak berhasil diunduh: {output_file}")
+        
         return output_file, title, duration
-    except asyncio.CancelledError:
-        print("Download cancelled")
-        return None, None, None
     except Exception as e:
         print(f"Error in download_audio: {e}")
+        import traceback
+        traceback.print_exc()
         return None, None, None
 
 def searchPlaylist(query):
