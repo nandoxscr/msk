@@ -2,6 +2,7 @@ from YMusic import app, call
 from YMusic.utils.queue import QUEUE, pop_an_item, get_queue, clear_queue, is_queue_empty
 from YMusic.utils.loop import get_loop
 from YMusic.misc import SUDOERS
+from YMusic.plugins.pytgcalls.pytgcalls import _skip
 
 from pytgcalls.types import MediaStream
 from pyrogram import filters
