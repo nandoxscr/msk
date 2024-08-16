@@ -1,10 +1,6 @@
 from pytgcalls import PyTgCalls, filters
 from pytgcalls.types import Update, MediaStream
 
-from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped
-
-
 from YMusic import call, app
 from YMusic.utils.queue import QUEUE, get_queue, clear_queue, pop_an_item, is_queue_empty
 from YMusic.utils.loop import get_loop, set_loop
@@ -26,16 +22,12 @@ async def _skip(chat_id):
 
     next_song = QUEUE[chat_id][0]
     try:
-        # await call.play(
-            # chat_id,
-            # MediaStream(
-                # next_song['audio_file'],
-                # video_flags=MediaStream.Flags.IGNORE,
-            # ),
-        # )
-        await call.join_group_call(
+        await call.play(
             chat_id,
-            AudioPiped(audio_file)
+            MediaStream(
+                next_song['audio_file'],
+                video_flags=MediaStream.Flags.IGNORE,
+            ),
         )
         return [next_song['title'], next_song['duration'], next_song['link'], time.time()]
     except Exception as e:
