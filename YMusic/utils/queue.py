@@ -7,10 +7,7 @@ def add_to_queue(chat_id, title, duration, audio_file, link):
     return len(QUEUE[chat_id])
 
 def get_queue(chat_id):
-    if chat_id in QUEUE:
-        return QUEUE[chat_id]
-    else:
-        return []
+    return QUEUE.get(chat_id, [])
 
 def pop_an_item(chat_id):
     if chat_id in QUEUE and QUEUE[chat_id]:

@@ -7,7 +7,6 @@ from YMusic.misc import SUDOERS
 from pyrogram import filters
 
 import asyncio
-import random
 import time
 import config
 
@@ -15,22 +14,20 @@ PLAY_COMMAND = ["P", "PLAY"]
 PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
 
-
 @app.on_message((filters.command(PLAY_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _aPlay(_, message):
     start_time = time.time()
     chat_id = message.chat.id
     
     async def process_audio(title, duration, audio_file, link):
-        if not is_queue_empty(chat_id):
-            queue_num = add_to_queue(chat_id, title[:19], duration, audio_file, link)
+        queue_num = add_to_queue(chat_id, title[:19], duration, audio_file, link)
+        if get_queue_length(chat_id) > 1:
             await m.edit(f"# {queue_num}\n{title[:19]}\nSaya telah memasukkan lagu Anda ke dalam antrian.")
         else:
             Status, Text = await userbot.playAudio(chat_id, audio_file)
             if not Status:
                 await m.edit(Text)
             else:
-                add_to_queue(chat_id, title[:19], duration, audio_file, link)
                 finish_time = time.time()
                 total_time_taken = str(int(finish_time - start_time)) + "s"
                 await m.edit(
@@ -68,4 +65,5 @@ async def _aPlay(_, message):
         
         except Exception as e:
             await message.reply_text(f"Error:- <code>{e}</code>")
-            
+
+# Fungsi tambahan jika diperlukan bisa ditambahkan di sini

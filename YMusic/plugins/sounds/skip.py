@@ -25,11 +25,6 @@ async def _aSkip(_, message):
 
     logger.debug(f"Skip command received for chat_id: {chat_id}")
 
-    # Get administrators
-    administrators = []
-    async for m in app.get_chat_members(chat_id, filter=ChatMembersFilter.ADMINISTRATORS):
-        administrators.append(m)
-
     if (message.from_user.id in SUDOERS) or (message.from_user.id in [admin.user.id for admin in administrators]):
         m = await message.reply_text("Mencoba melewati lagu saat ini...")
         
@@ -38,7 +33,7 @@ async def _aSkip(_, message):
             if loop != 0:
                 return await m.edit_text(f"Loop diaktifkan untuk lagu saat ini. Harap nonaktifkan dengan {PREFIX}endloop untuk melewati lagu.")
             
-            logger.debug(f"Current queue state for chat_id {chat_id}: {QUEUE.get(chat_id, [])}")
+            logger.debug(f"Current queue state for chat_id {chat_id}: {get_queue(chat_id)}")
             
             if is_queue_empty(chat_id):
                 logger.debug(f"Queue is empty for chat_id {chat_id}")
@@ -47,10 +42,10 @@ async def _aSkip(_, message):
                 return
 
             current_song = pop_an_item(chat_id)
-            logger.debug(f"Popped item from queue: {current_song}")
+            logger.debug(f"Skipped song: {current_song}")
 
             if is_queue_empty(chat_id):
-                logger.debug(f"Queue became empty after popping for chat_id {chat_id}")
+                logger.debug(f"Queue became empty after skipping for chat_id {chat_id}")
                 await stop(chat_id)
                 await m.edit_text("Tidak ada lagu berikutnya. Saya meninggalkan obrolan suara...")
                 return
@@ -58,7 +53,10 @@ async def _aSkip(_, message):
             next_song = get_queue(chat_id)[0]
             logger.debug(f"Next song to play: {next_song}")
 
-            title, duration, songlink, link = next_song[1], next_song[2], next_song[3], next_song[4]
+            title = next_song['title']
+            duration = next_song['duration']
+            songlink = next_song['audio_file']
+            link = next_song['link']
             
             try:
                 await call.play(
@@ -84,6 +82,7 @@ async def _aSkip(_, message):
             await m.edit_text(f"Terjadi kesalahan yang tidak terduga: {e}")
     else:
         await message.reply_text("Maaf, hanya admin dan SUDOERS yang dapat melewati lagu.")
+
 
 async def stop(chat_id):
     try:
