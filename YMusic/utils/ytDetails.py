@@ -46,7 +46,7 @@ async def download_audio(link, file_name):
         ],
         'prefer_ffmpeg': True,
         'keepvideo': False,
-        'verbose': True,
+        'verbose': False,
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
