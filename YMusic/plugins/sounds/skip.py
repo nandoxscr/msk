@@ -18,10 +18,16 @@ RPREFIX = config.RPREFIX
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
 @app.on_message((filters.command(SKIP_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _aSkip(_, message):
     chat_id = message.chat.id
-    
+
+    # Dapatkan daftar administrator
+    administrators = []
+    async for admin in app.get_chat_members(chat_id, filter=ChatMembersFilter.ADMINISTRATORS):
+        administrators.append(admin)
+
     if (message.from_user.id in SUDOERS) or (message.from_user.id in [admin.user.id for admin in administrators]):
         m = await message.reply_text("Mencoba melewati lagu saat ini...")
         
@@ -45,7 +51,8 @@ async def _aSkip(_, message):
             await m.edit(f"Terjadi kesalahan: {str(e)}")
     else:
         await message.reply_text("Maaf, hanya admin dan SUDOERS yang dapat melewati lagu.")
-
+        
+        
 async def stop(chat_id):
     try:
         await call.leave_call(chat_id)
