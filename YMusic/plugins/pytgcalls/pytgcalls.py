@@ -51,7 +51,8 @@ async def handler(client: PyTgCalls, update: Update):
                 await start_play_time(chat_id)
                 await app.send_message(
                     chat_id,
-                    f"Memutar lagu berikutnya:\n\nJudul: {title}\nDurasi: {duration}\nLink: {link}"
+                    f"Memutar lagu berikutnya:\n\nJudul: {title}\nDurasi: {duration}\nLink: {link}",
+                    disable_web_page_preview=True
                 )
             else:
                 await app.send_message(chat_id, "Tidak dapat memutar lagu berikutnya. Meninggalkan obrolan suara.")
