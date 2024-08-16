@@ -1,6 +1,7 @@
 from youtubesearchpython import VideosSearch, PlaylistsSearch
 from urllib.parse import urlparse, parse_qs
 from pytube import YouTube
+import yt_dlp
 
 async def searchYt(query):
     try:
@@ -17,16 +18,27 @@ async def searchYt(query):
         return None, None, None
 
 async def download_audio(link, file_name):
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
+        'outtmpl': f'{file_name}.%(ext)s',
+    }
     try:
-        yt = YouTube(link)
-        audio = yt.streams.filter(only_audio=True).first()
-        out_file = audio.download(output_path=".", filename=file_name)
-        base, ext = os.path.splitext(out_file)
-        new_file = base + '.mp3'
-        os.rename(out_file, new_file)
-        return new_file
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([link])
+        return f"{file_name}.mp3"
+    except yt_dlp.utils.DownloadError as e:
+        print(f"Download error: {e}")
+        return None
+    except yt_dlp.utils.ExtractorError as e:
+        print(f"Extractor error: {e}")
+        return None
     except Exception as e:
-        print(f"Error in download_audio: {e}")
+        print(f"Unexpected error in download_audio: {e}")
         return None
 
 def searchPlaylist(query):
