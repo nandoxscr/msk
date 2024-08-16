@@ -2,7 +2,7 @@ from pytgcalls import PyTgCalls, filters
 from pytgcalls.types import Update, MediaStream
 
 from YMusic import call, app
-from YMusic.utils.queue import QUEUE, get_queue, clear_queue, pop_an_item
+from YMusic.utils.queue import QUEUE, get_queue, clear_queue, pop_an_item, is_queue_empty
 from YMusic.utils.loop import get_loop, set_loop
 from YMusic.utils.utils import clear_downloads_cache
 
