@@ -9,50 +9,31 @@ import time
 
 
 async def _skip(chat_id):
-    loop = await get_loop(chat_id)
-    if loop > 0:
-        try:
-            chat_queue = get_queue(chat_id)
-            if not chat_queue:
-                return 1  # Queue is empty
-            loop -= 1
-            await set_loop(chat_id, loop)
-            current_song = chat_queue[0]
-            await call.play(
-                chat_id,
-                MediaStream(
-                    current_song['audio_file'],
-                    video_flags=MediaStream.Flags.IGNORE,
-                ),
-            )
-            finish_time = time.time()
-            return [current_song['title'], current_song['duration'], current_song['link'], finish_time]
-        except Exception as e:
-            return [2, f"Error:- <code>{e}</code>"]
+    try:
+        if chat_id not in QUEUE or not QUEUE[chat_id]:
+            return 1  # Antrian kosong
 
-    if chat_id in QUEUE:
-        chat_queue = get_queue(chat_id)
-        if not chat_queue:
+        pop_an_item(chat_id)
+        if not QUEUE[chat_id]:
             await stop(chat_id)
-            clear_queue(chat_id)
-            return 1
-        else:
-            try:
-                pop_an_item(chat_id)  # Remove the current song
-                next_song = chat_queue[0]  # Get the next song
-                await call.play(
-                    chat_id,
-                    MediaStream(
-                        next_song['audio_file'],
-                        video_flags=MediaStream.Flags.IGNORE,
-                    ),
-                )
-                finish_time = time.time()
-                return [next_song['title'], next_song['duration'], next_song['link'], finish_time]
-            except Exception as e:
-                return [2, f"Error:- <code>{e}</code>"]
-    await stop(chat_id)
-    return 1
+            return 1  # Antrian kosong setelah skip
+
+        next_song = QUEUE[chat_id][0]
+        await call.play(
+            chat_id,
+            MediaStream(
+                next_song['audio_file'],
+                video_flags=MediaStream.Flags.IGNORE,
+            ),
+        )
+        return [next_song['title'], next_song['duration'], next_song['link'], time.time()]
+    except IndexError:
+        # Jika terjadi IndexError, kemungkinan antrian sudah kosong
+        await stop(chat_id)
+        return 1
+    except Exception as e:
+        print(f"Error in _skip: {e}")
+        return 2  # Kode error umum
 
 
 @call.on_update(filters.stream_end)
