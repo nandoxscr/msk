@@ -47,7 +47,7 @@ async def _aSkip(_, message):
                     f"Judul: {title}\n"
                     f"Durasi: {duration}\n"
                     f"Link: {link}",
-                    disable_web_page_preview=True  # Menonaktifkan preview web
+                    disable_web_page_preview=True
                 )
             else:
                 await m.edit("Terjadi kesalahan yang tidak terduga saat melewati lagu.")

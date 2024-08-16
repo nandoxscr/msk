@@ -12,10 +12,12 @@ import time
 
 async def _skip(chat_id):
     if is_queue_empty(chat_id):
+        print("queue empty 1")
         return None
 
     pop_an_item(chat_id)
     if is_queue_empty(chat_id):
+        print("queue empty 2")
         return None
 
     next_song = QUEUE[chat_id][0]
@@ -36,7 +38,6 @@ async def _skip(chat_id):
 @call.on_update(filters.stream_end)
 async def handler(client: PyTgCalls, update: Update):
     chat_id = update.chat_id
-    
     try:
         if is_queue_empty(chat_id):
             await stop(chat_id)
