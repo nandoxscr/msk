@@ -1,4 +1,3 @@
-import logging
 from YMusic import app, call
 from YMusic.utils.queue import QUEUE, pop_an_item, get_queue, clear_queue, is_queue_empty
 from YMusic.utils.loop import get_loop
@@ -10,6 +9,7 @@ from pyrogram.enums import ChatMembersFilter
 
 import time
 import config
+import logging
 
 SKIP_COMMAND = ["SKIP"]
 PREFIX = config.PREFIX
@@ -24,6 +24,11 @@ async def _aSkip(_, message):
     chat_id = message.chat.id
 
     logger.debug(f"Skip command received for chat_id: {chat_id}")
+
+    # Get administrators
+    administrators = []
+    async for m in app.get_chat_members(chat_id, filter=ChatMembersFilter.ADMINISTRATORS):
+        administrators.append(m)
 
     if (message.from_user.id in SUDOERS) or (message.from_user.id in [admin.user.id for admin in administrators]):
         m = await message.reply_text("Mencoba melewati lagu saat ini...")
@@ -82,7 +87,6 @@ async def _aSkip(_, message):
             await m.edit_text(f"Terjadi kesalahan yang tidak terduga: {e}")
     else:
         await message.reply_text("Maaf, hanya admin dan SUDOERS yang dapat melewati lagu.")
-
 
 async def stop(chat_id):
     try:
