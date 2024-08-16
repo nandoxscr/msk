@@ -1,6 +1,6 @@
 from YMusic import app
 from YMusic.core import userbot
-from YMusic.utils.ytDetails import searchYt, extract_video_id
+from YMusic.utils.ytDetails import searchYt, extract_video_id, download_audio
 from YMusic.utils.queue import QUEUE, add_to_queue
 from YMusic.misc import SUDOERS
 
@@ -63,79 +63,64 @@ async def playWithLinks(link):
 async def _aPlay(_, message):
     start_time = time.time()
     chat_id = message.chat.id
-    if (message.reply_to_message) is not None:
-        if message.reply_to_message.audio or message.reply_to_message.voice:
-            input_filename, m = await processReplyToMessage(message)
-            if input_filename is None:
-                await message.reply_text(
-                    "Who will reply to the audio? Or who will post the song link? 🤔"
+    if message.reply_to_message and (message.reply_to_message.audio or message.reply_to_message.voice):
+        m = await message.reply_text("Tunggu...Saya sedang mengunduh audio Anda....")
+        audio_file = await message.reply_to_message.download()
+        await m.edit("Tunggu...Saya ingin memutar audio Anda...")
+        Status, Text = await userbot.playAudio(chat_id, audio_file)
+        if not Status:
+            await m.edit(Text)
+        else:
+            if chat_id in QUEUE:
+                queue_num = add_to_queue(
+                    chat_id,
+                    message.reply_to_message.audio.title[:19] if message.reply_to_message.audio else "Voice Message",
+                    message.reply_to_message.audio.duration if message.reply_to_message.audio else 0,
+                    audio_file,
+                    message.reply_to_message.link,
                 )
-                return
-            await m.edit("Wait...I want to play your audio...")
-            Status, Text = await userbot.playAudio(chat_id, input_filename)
-            if Status == False:
-                await m.edit(Text)
+                await m.edit(f"# {queue_num}\nSaya telah memasukkan audio Anda ke dalam antrian.")
             else:
-                if chat_id in QUEUE:
-                    queue_num = add_to_queue(
-                        chat_id,
-                        message.reply_to_message.audio.title[:19],
-                        message.reply_to_message.audio.duration,
-                        message.reply_to_message.audio.file_id,
-                        message.reply_to_message.link,
-                    )
-                    await m.edit(
-                        f"# {queue_num}\n{message.reply_to_message.audio.title[:19]}\nI have put your song in the queue."
-                    )
-                    return
                 finish_time = time.time()
                 total_time_taken = str(int(finish_time - start_time)) + "s"
                 await m.edit(
-                    f"I am playing your song right now\n\nSongName:- [{message.reply_to_message.audio.title[:19]}]({message.reply_to_message.link})\nDuration:- {message.reply_to_message.audio.duration}\nTime taken to play:- {total_time_taken}",
+                    f"Saya sedang memutar audio Anda sekarang\n\nNama Audio:- {message.reply_to_message.audio.title[:19] if message.reply_to_message.audio else 'Voice Message'}\nDurasi:- {message.reply_to_message.audio.duration if message.reply_to_message.audio else 'N/A'}\nWaktu yang dibutuhkan untuk memutar:- {total_time_taken}",
                     disable_web_page_preview=True,
                 )
-    elif (len(message.command)) < 2:
-        await message.reply_text("Who will name the song?? 🤔")
+    elif len(message.command) < 2:
+        await message.reply_text("Siapa yang akan menyebutkan nama lagunya?? 🤔")
     else:
-        m = await message.reply_text("Wait...I'm looking for your song....")
+        m = await message.reply_text("Tunggu...Saya sedang mencari lagu Anda....")
         query = message.text.split(maxsplit=1)[1]
-        video_id = extract_video_id(query)
         try:
-            if video_id is None:
-                video_id = query
-            title, duration, link = searchYt(video_id)
-            if (title, duration, link) == (None, None, None):
-                return await m.edit("No results found")
+            title, duration, link = await searchYt(query)
+            if not title:
+                return await m.edit("Tidak ada hasil ditemukan")
+            
+            await m.edit("Tunggu...Saya sedang mengunduh lagu Anda....")
+            file_name = f"{title[:50]}.mp3"
+            audio_file = await download_audio(link, file_name)
+            
+            if not audio_file:
+                return await m.edit("Gagal mengunduh audio. Silakan coba lagi.")
+            
+            if chat_id in QUEUE:
+                queue_num = add_to_queue(chat_id, title[:19], duration, audio_file, link)
+                await m.edit(f"# {queue_num}\n{title[:19]}\nSaya telah memasukkan lagu Anda ke dalam antrian.")
+            else:
+                Status, Text = await userbot.playAudio(chat_id, audio_file)
+                if not Status:
+                    await m.edit(Text)
+                else:
+                    add_to_queue(chat_id, title[:19], duration, audio_file, link)
+                    finish_time = time.time()
+                    total_time_taken = str(int(finish_time - start_time)) + "s"
+                    await m.edit(
+                        f"Saya sedang memutar lagu Anda sekarang\n\nNama Lagu:- [{title[:19]}]({link})\nDurasi:- {duration}\nWaktu yang dibutuhkan untuk memutar:- {total_time_taken}",
+                        disable_web_page_preview=True,
+                    )
         except Exception as e:
             await message.reply_text(f"Error:- <code>{e}</code>")
-            return
-
-        await m.edit("Wait...I am downloading your song....")
-        format = "bestaudio"
-        resp, songlink = await ytdl(format, link)
-        if resp == 0:
-            await m.edit(f"❌ yt-dl issues detected\n\n» `{songlink}`")
-        else:
-            if chat_id in QUEUE:
-                queue_num = add_to_queue(chat_id, title[:19], duration, songlink, link)
-                await m.edit(
-                    f"# {queue_num}\n{title[:19]}\nI have put your song in the queue."
-                )
-                return
-            # await asyncio.sleep(1)
-            Status, Text = await userbot.playAudio(chat_id, songlink)
-            if Status == False:
-                await m.edit(Text)
-            if duration is None:
-                duration = "Playing From LiveStream"
-            add_to_queue(chat_id, title[:19], duration, songlink, link)
-            finish_time = time.time()
-            total_time_taken = str(int(finish_time - start_time)) + "s"
-            await m.edit(
-                f"I am playing your song right now\n\nSongName:- [{title[:19]}]({link})\nDuration:- {duration}\nTime taken to play:- {total_time_taken}",
-                disable_web_page_preview=True,
-            )
-
 
 @app.on_message((filters.command(PLAY_COMMAND, [PREFIX, RPREFIX])) & SUDOERS)
 async def _raPlay(_, message):

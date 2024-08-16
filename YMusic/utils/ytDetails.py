@@ -1,18 +1,33 @@
 from youtubesearchpython import VideosSearch, PlaylistsSearch
 from urllib.parse import urlparse, parse_qs
+from pytube import YouTube
 
-
-def searchYt(query):
-    query = str(query)
-    videosResult = VideosSearch(query, limit=1)
-    Result = videosResult.result()
-    if not Result["result"] == []:
-        title = Result["result"][0]["title"]
-        duration = Result["result"][0]["duration"]
-        link = Result["result"][0]["link"]
+async def searchYt(query):
+    try:
+        videosSearch = VideosSearch(query, limit=1)
+        result = videosSearch.result()
+        if not result["result"]:
+            return None, None, None
+        title = result["result"][0]["title"]
+        duration = result["result"][0]["duration"]
+        link = result["result"][0]["link"]
         return title, duration, link
-    return None, None, None
+    except Exception as e:
+        print(f"Error in searchYt: {e}")
+        return None, None, None
 
+async def download_audio(link, file_name):
+    try:
+        yt = YouTube(link)
+        audio = yt.streams.filter(only_audio=True).first()
+        out_file = audio.download(output_path=".", filename=file_name)
+        base, ext = os.path.splitext(out_file)
+        new_file = base + '.mp3'
+        os.rename(out_file, new_file)
+        return new_file
+    except Exception as e:
+        print(f"Error in download_audio: {e}")
+        return None
 
 def searchPlaylist(query):
     query = str(query)
