@@ -4,10 +4,11 @@ from pyrogram.enums import ChatMembersFilter
 from YMusic import app
 from YMusic.utils.queue import clear_queue
 from YMusic.utils.loop import get_loop, set_loop
+from YMusic.utils.utils import clear_downloads_cache
 from YMusic.core import userbot
 from YMusic.misc import SUDOERS
-import config
 
+import config
 
 PREFIX = config.PREFIX
 
@@ -44,6 +45,7 @@ async def _stop(_, message):
         Text = await userbot.stop(message.chat.id)
         try:
             clear_queue(message.chat.id)
+            clear_downloads_cache()
         except:
             pass
         await message.reply_text(Text)

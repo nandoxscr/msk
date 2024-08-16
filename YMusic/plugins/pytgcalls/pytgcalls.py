@@ -4,6 +4,7 @@ from pytgcalls.types import Update, MediaStream
 from YMusic import call, app
 from YMusic.utils.queue import QUEUE, get_queue, clear_queue, pop_an_item
 from YMusic.utils.loop import get_loop, set_loop
+from YMusic.utils.utils import clear_downloads_cache
 
 import time
 
@@ -42,6 +43,7 @@ async def handler(client: PyTgCalls, update: Update):
     chat_id = update.chat_id
     resp = await _skip(chat_id)
     if resp == 1:
+        clear_downloads_cache()
         await app.send_message(chat_id, "Antrian kosong. Meninggalkan obrolan suara.")
     elif isinstance(resp, list) and resp[0] == 2:
         await app.send_message(chat_id, resp[1])
@@ -58,8 +60,9 @@ async def handler(client: PyTgCalls, update: Update):
 
 async def stop(chat_id):
     try:
-        await call.leave_call(
-            chat_id,
-        )
+        await call.leave_call(chat_id)
     except:
         pass
+    finally:
+        clear_downloads_cache()
+        
