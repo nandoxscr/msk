@@ -14,11 +14,11 @@ def get_queue(chat_id):
 
 def pop_an_item(chat_id):
     if chat_id in QUEUE and QUEUE[chat_id]:
-        QUEUE[chat_id].pop(0)
+        item = QUEUE[chat_id].pop(0)
         if not QUEUE[chat_id]:
             del QUEUE[chat_id]
-        return True
-    return False
+        return item
+    return None
 
 def clear_queue(chat_id):
     if chat_id in QUEUE:

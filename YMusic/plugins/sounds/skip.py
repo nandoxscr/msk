@@ -1,3 +1,4 @@
+import logging
 from YMusic import app, call
 from YMusic.utils.queue import QUEUE, pop_an_item, get_queue, clear_queue, is_queue_empty
 from YMusic.utils.loop import get_loop
@@ -14,10 +15,15 @@ SKIP_COMMAND = ["SKIP"]
 PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
 
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 @app.on_message((filters.command(SKIP_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _aSkip(_, message):
     start_time = time.time()
     chat_id = message.chat.id
+
+    logger.debug(f"Skip command received for chat_id: {chat_id}")
 
     # Get administrators
     administrators = []
@@ -26,32 +32,47 @@ async def _aSkip(_, message):
 
     if (message.from_user.id in SUDOERS) or (message.from_user.id in [admin.user.id for admin in administrators]):
         m = await message.reply_text("Mencoba melewati lagu saat ini...")
-        loop = await get_loop(chat_id)
-        if loop != 0:
-            return await m.edit_text(f"Loop diaktifkan untuk lagu saat ini. Harap nonaktifkan dengan {PREFIX}endloop untuk melewati lagu.")
         
-        if is_queue_empty(chat_id):
-            await stop(chat_id)
-            await m.edit_text("Antrian kosong. Saya meninggalkan obrolan suara...")
-            return
-
         try:
-            pop_an_item(chat_id)  # Remove current song
+            loop = await get_loop(chat_id)
+            if loop != 0:
+                return await m.edit_text(f"Loop diaktifkan untuk lagu saat ini. Harap nonaktifkan dengan {PREFIX}endloop untuk melewati lagu.")
+            
+            logger.debug(f"Current queue state for chat_id {chat_id}: {QUEUE.get(chat_id, [])}")
+            
             if is_queue_empty(chat_id):
+                logger.debug(f"Queue is empty for chat_id {chat_id}")
+                await stop(chat_id)
+                await m.edit_text("Antrian kosong. Saya meninggalkan obrolan suara...")
+                return
+
+            current_song = pop_an_item(chat_id)
+            logger.debug(f"Popped item from queue: {current_song}")
+
+            if is_queue_empty(chat_id):
+                logger.debug(f"Queue became empty after popping for chat_id {chat_id}")
                 await stop(chat_id)
                 await m.edit_text("Tidak ada lagu berikutnya. Saya meninggalkan obrolan suara...")
                 return
 
             next_song = get_queue(chat_id)[0]
+            logger.debug(f"Next song to play: {next_song}")
+
             title, duration, songlink, link = next_song[1], next_song[2], next_song[3], next_song[4]
             
-            await call.play(
-                chat_id,
-                MediaStream(
-                    songlink,
-                    video_flags=MediaStream.Flags.AUTO_DETECT,
-                ),
-            )
+            try:
+                await call.play(
+                    chat_id,
+                    MediaStream(
+                        songlink,
+                        video_flags=MediaStream.Flags.AUTO_DETECT,
+                    ),
+                )
+            except Exception as e:
+                logger.error(f"Error playing next song: {e}")
+                await m.edit_text(f"Error memutar lagu berikutnya: {e}")
+                return
+
             finish_time = time.time()
             total_time_taken = str(int(finish_time - start_time)) + "s"
             await m.edit_text(
@@ -59,29 +80,13 @@ async def _aSkip(_, message):
                 disable_web_page_preview=True,
             )
         except Exception as e:
-            await m.edit_text(f"Error:- <code>{e}</code>")
+            logger.error(f"Unexpected error in _aSkip: {e}")
+            await m.edit_text(f"Terjadi kesalahan yang tidak terduga: {e}")
     else:
         await message.reply_text("Maaf, hanya admin dan SUDOERS yang dapat melewati lagu.")
-
-@app.on_message(filters.command("queue", [PREFIX, RPREFIX]) & filters.group)
-async def _queue(_, message):
-    chat_id = message.chat.id
-    if not is_queue_empty(chat_id):
-        chat_queue = get_queue(chat_id)
-        if len(chat_queue) == 1:
-            await message.reply_text("Antrian kosong")
-            return
-        queue = chat_queue[1:]
-        output = "**Antrian:**\n"
-        for i, item in enumerate(queue):
-            title, duration, link = item[1], item[2], item[4]
-            output += f"{i + 1}. [{title}]({link}) - {duration}\n"
-        await message.reply_text(output, disable_web_page_preview=True)
-    else:
-        await message.reply_text("Antrian kosong")
 
 async def stop(chat_id):
     try:
         await call.leave_call(chat_id)
-    except:
-        pass
+    except Exception as e:
+        logger.error(f"Error leaving call for chat_id {chat_id}: {e}")
