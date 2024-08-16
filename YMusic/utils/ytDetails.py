@@ -2,6 +2,7 @@ from youtubesearchpython import VideosSearch, PlaylistsSearch
 from urllib.parse import urlparse, parse_qs
 from pytube import YouTube
 import yt_dlp
+import config
 
 async def searchYt(query):
     try:
@@ -26,6 +27,7 @@ async def download_audio(link, file_name):
             'preferredquality': '192',
         }],
         'outtmpl': f'{file_name}.%(ext)s',
+        'cookiefile': config.COOK_PATH,
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
