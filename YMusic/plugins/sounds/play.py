@@ -98,29 +98,30 @@ async def _aPlay(_, message):
                 return await m.edit("Tidak ada hasil ditemukan")
             
             await m.edit("Tunggu...Saya sedang mengunduh lagu Anda....")
-            file_name = f"{title[:50]}.mp3"
-            audio_file = await download_audio(link, file_name)
+            file_name = f"{title[:50]}"
+            audio_file, downloaded_title, audio_duration = await download_audio(link, file_name)
             
             if not audio_file:
                 return await m.edit("Gagal mengunduh audio. Silakan coba lagi.")
             
             if chat_id in QUEUE:
-                queue_num = add_to_queue(chat_id, title[:19], duration, audio_file, link)
-                await m.edit(f"# {queue_num}\n{title[:19]}\nSaya telah memasukkan lagu Anda ke dalam antrian.")
+                queue_num = add_to_queue(chat_id, downloaded_title[:19], audio_duration, audio_file, link)
+                await m.edit(f"# {queue_num}\n{downloaded_title[:19]}\nSaya telah memasukkan lagu Anda ke dalam antrian.")
             else:
                 Status, Text = await userbot.playAudio(chat_id, audio_file)
                 if not Status:
                     await m.edit(Text)
                 else:
-                    add_to_queue(chat_id, title[:19], duration, audio_file, link)
+                    add_to_queue(chat_id, downloaded_title[:19], audio_duration, audio_file, link)
                     finish_time = time.time()
                     total_time_taken = str(int(finish_time - start_time)) + "s"
                     await m.edit(
-                        f"Saya sedang memutar lagu Anda sekarang\n\nNama Lagu:- [{title[:19]}]({link})\nDurasi:- {duration}\nWaktu yang dibutuhkan untuk memutar:- {total_time_taken}",
+                        f"Saya sedang memutar lagu Anda sekarang\n\nNama Lagu:- [{downloaded_title[:19]}]({link})\nDurasi:- {audio_duration}\nWaktu yang dibutuhkan untuk memutar:- {total_time_taken}",
                         disable_web_page_preview=True,
                     )
         except Exception as e:
             await message.reply_text(f"Error:- <code>{e}</code>")
+
 
 @app.on_message((filters.command(PLAY_COMMAND, [PREFIX, RPREFIX])) & SUDOERS)
 async def _raPlay(_, message):

@@ -3,6 +3,7 @@ from urllib.parse import urlparse, parse_qs
 from pytube import YouTube
 import yt_dlp
 import config
+import os
 
 async def searchYt(query):
     try:
@@ -19,29 +20,46 @@ async def searchYt(query):
         return None, None, None
 
 async def download_audio(link, file_name):
+    output_path = os.path.join(os.getcwd(), "downloads")
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
     ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-            'preferredquality': '192',
+            'preferredquality': '320',  # Highest MP3 bitrate
+        }, {
+            'key': 'FFmpegMetadata',
+            'add_metadata': True,
         }],
-        'outtmpl': f'{file_name}.%(ext)s',
+        'outtmpl': os.path.join(output_path, f'{file_name}.%(ext)s'),
         'cookiefile': config.COOK_PATH,
+        'ffmpeg_location': '/usr/bin/ffmpeg',  # Ganti dengan path ke ffmpeg Anda
+        'postprocessor_args': [
+            '-acodec', 'libmp3lame',
+            '-b:a', '320k',
+            '-ar', '48000',  # Sample rate
+            '-ac', '2',      # Stereo
+            '-q:a', '0',     # Highest quality setting for LAME
+        ],
+        'prefer_ffmpeg': True,
+        'keepvideo': False,
+        'verbose': True,
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(link, download=False)
+            duration = info.get('duration')
+            title = info.get('title')
             ydl.download([link])
-        return f"{file_name}.mp3"
-    except yt_dlp.utils.DownloadError as e:
-        print(f"Download error: {e}")
-        return None
-    except yt_dlp.utils.ExtractorError as e:
-        print(f"Extractor error: {e}")
-        return None
+        
+        output_file = os.path.join(output_path, f'{file_name}.mp3')
+        return output_file, title, duration
     except Exception as e:
-        print(f"Unexpected error in download_audio: {e}")
-        return None
+        print(f"Error in download_audio: {e}")
+        return None, None, None
 
 def searchPlaylist(query):
     query = str(query)
