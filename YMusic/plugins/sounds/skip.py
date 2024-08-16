@@ -3,6 +3,7 @@ from YMusic.utils.queue import QUEUE, pop_an_item, get_queue, clear_queue, is_qu
 from YMusic.utils.loop import get_loop
 from YMusic.misc import SUDOERS
 from YMusic.plugins.pytgcalls.pytgcalls import _skip
+from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 
 from pytgcalls.types import MediaStream
 from pyrogram import filters
@@ -32,7 +33,7 @@ async def _aSkip(_, message):
             return
 
         m = await message.reply_text("Mencoba melewati lagu saat ini...")
-        
+        stop_play_time(chat_id)
         try:
             result = await _skip(chat_id)
             
@@ -43,6 +44,7 @@ async def _aSkip(_, message):
                     await m.edit("Terjadi kesalahan saat melewati lagu.")
             elif isinstance(result, list):
                 title, duration, link, _ = result
+                start_play_time(chat_id)
                 await m.edit(
                     f"Berhasil melewati lagu. Sekarang memutar:\n\n"
                     f"Judul: {title}\n"

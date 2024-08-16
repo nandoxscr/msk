@@ -2,6 +2,7 @@ from YMusic import app
 from YMusic.core import userbot
 from YMusic.utils.ytDetails import searchYt, extract_video_id, download_audio
 from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty, get_queue
+from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 from YMusic.misc import SUDOERS
 
 from pyrogram import filters
@@ -13,7 +14,7 @@ import config
 
 # Variabel global
 PLAY_COMMAND = ["P", "PLAY"]
-PLAYLIST_COMMAND = ["PLAYLIST", "QUEUE"]
+PLAYLIST_COMMAND = ["PLAYLIST", "PL"]
 CANCEL_COMMAND = ["CANCEL"]
 PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
@@ -41,6 +42,7 @@ async def _aPlay(_, message):
                 await m.edit(Text)
             else:
                 finish_time = time.time()
+                start_play_time(chat_id)
                 total_time_taken = str(int(finish_time - start_time)) + "s"
                 await m.edit(
                     f"Saya sedang memutar lagu Anda sekarang\n\nNama Lagu:- [{title[:19]}]({link})\nDurasi:- {duration}\nWaktu yang dibutuhkan untuk memutar:- {total_time_taken}",
