@@ -12,11 +12,11 @@ import time
 
 async def _skip(chat_id):
     if is_queue_empty(chat_id):
-        return None  # Menandakan bahwa antrian kosong
+        return None
 
     pop_an_item(chat_id)
     if is_queue_empty(chat_id):
-        return None  # Antrian menjadi kosong setelah pop
+        return None
 
     next_song = QUEUE[chat_id][0]
     try:

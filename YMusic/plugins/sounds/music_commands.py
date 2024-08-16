@@ -12,7 +12,7 @@ import asyncio
 import time
 import config
 
-# Variabel global
+
 PLAY_COMMAND = ["P", "PLAY"]
 PLAYLIST_COMMAND = ["PLAYLIST", "PL"]
 CANCEL_COMMAND = ["CANCEL"]
@@ -27,7 +27,7 @@ async def _aPlay(_, message):
     chat_id = message.chat.id
     
     if ONGOING_PROCESSES[chat_id]:
-        await message.reply_text("Proses lain sedang berlangsung. Gunakan .cancel untuk membatalkannya terlebih dahulu.")
+        await message.reply_text("Proses lain sedang berlangsung. Tunggu sampai selesai.")
         return
 
     ONGOING_PROCESSES[chat_id] = asyncio.current_task()
@@ -59,7 +59,7 @@ async def _aPlay(_, message):
             await process_audio(title, duration, audio_file, link)
         
         elif len(message.command) < 2:
-            await message.reply_text("Siapa yang akan menyebutkan nama lagunya?? 🤔")
+            await message.reply_text("Mau lagu apa tuan? 🙏")
         
         else:
             m = await message.reply_text("Tunggu...Saya sedang mencari lagu Anda....")
@@ -100,7 +100,7 @@ async def _playlist(_, message):
         if i == 1:
             playlist += "   ▶️ Sedang diputar\n"
         if i == 10:
-            break  # Batasi hanya 10 lagu yang ditampilkan
+            break 
 
     if len(queue) > 10:
         playlist += f"\nDan {len(queue) - 10} lagu lainnya..."
@@ -123,5 +123,3 @@ async def _cancel(_, message):
         await message.reply_text("Tidak dapat membatalkan proses saat ini.")
     
     ONGOING_PROCESSES[chat_id] = None
-
-# Fungsi tambahan jika diperlukan bisa ditambahkan di sini

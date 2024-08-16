@@ -14,20 +14,10 @@ PREFIX = config.PREFIX
 
 RPREFIX = config.RPREFIX
 
-STOP_COMMAND = ["STOP", "CHUP"]
-
+STOP_COMMAND = ["STOP"]
 PAUSE_COMMAND = ["PAUSE"]
-
 RESUME_COMMAND = ["RESUME"]
-
-MUTE_COMMAND = ["MUTE"]
-
-UNMUTE_COMMAND = ["UNMUTE"]
-
-VOLUME_COMMAND = ["VOL", "VOLUME"]
-
 LOOP_COMMAND = ["LOOP"]
-
 LOOPEND_COMMAND = ["ENDLOOP"]
 
 
@@ -51,7 +41,7 @@ async def _stop(_, message):
         await message.reply_text(Text)
     else:
         return await message.reply_text(
-            "You idiots... (Forgive me for saying a little bit out of anger) That's why you don't have to tell the admins...."
+            "Hanya Admin Saja"
         )
 
 
@@ -80,7 +70,7 @@ async def _pause(_, message):
         await message.reply_text(Text)
     else:
         return await message.reply_text(
-            "You idiots... (Forgive me for saying a little bit out of anger) That's why you don't have to tell the admins...."
+            "Hanya Admin Saja"
         )
 
 
@@ -109,7 +99,7 @@ async def _resume(_, message):
         await message.reply_text(Text)
     else:
         return await message.reply_text(
-            "You idiots... (Forgive me for saying a little bit out of anger) That's why you don't have to tell the admins...."
+            "Hanya Admin Saja"
         )
 
 
@@ -121,53 +111,6 @@ async def _resume(_, message):
         msg_id = message.text.split(" ", 1)[1]
         Text = await userbot.resume(msg_id)
         await message.reply_text(Text)
-
-
-@app.on_message(filters.command(MUTE_COMMAND, PREFIX))
-async def _mute(_, message):
-    if message.from_user and message.from_user.is_self:
-        reply = message.edit
-    else:
-        reply = message.reply_text
-    Text = await userbot.mute(message.chat.id)
-    await reply(Text)
-
-
-@app.on_message(filters.command(MUTE_COMMAND, RPREFIX))
-async def _mute(_, message):
-    if (len(message.command)) != 2:
-        await message.reply_text("You forgot to pass an argument")
-    else:
-        msg_id = message.text.split(" ", 1)[1]
-        Text = await userbot.mute(msg_id)
-        await message.reply_text(Text)
-
-
-@app.on_message(filters.command(UNMUTE_COMMAND, PREFIX))
-async def _unmute(_, message):
-    Text = await userbot.unmute(message.chat.id)
-    await message.reply_text(Text)
-
-
-@app.on_message(filters.command(UNMUTE_COMMAND, RPREFIX))
-async def _unmute(_, message):
-    if (len(message.command)) != 2:
-        await message.reply_text("You forgot to pass an argument")
-    else:
-        msg_id = message.text.split(" ", 1)[1]
-        Text = await userbot.unmute(msg_id)
-        await message.reply_text(Text)
-
-
-@app.on_message(filters.command(VOLUME_COMMAND, PREFIX))
-async def _volume(_, message):
-    try:
-        vol = int(message.text.split()[1])
-        Text = await userbot.changeVolume(message.chat.id, vol)
-    except:
-        Text = await userbot.changeVolume(message.chat.id)
-    await message.reply_text(Text)
-
 
 @app.on_message(filters.command(LOOP_COMMAND, PREFIX))
 async def _loop(_, message):
@@ -194,7 +137,7 @@ async def _loop(_, message):
             await message.reply_text("Loop already enabled")
     else:
         return await message.reply_text(
-            "You idiots... (Forgive me for saying a little bit out of anger) That's why you don't have to tell the admins...."
+            "Hanya Admin Saja"
         )
 
 
@@ -220,5 +163,5 @@ async def _endLoop(_, message):
                 return await message.reply_text(f"Error:- <code>{e}</code>")
     else:
         return await message.reply_text(
-            "You idiots... (Forgive me for saying a little bit out of anger) That's why you don't have to tell the admins...."
+            "Hanya Admin Saja"
         )

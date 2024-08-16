@@ -20,14 +20,11 @@ RPREFIX = config.RPREFIX
 @app.on_message((filters.command(SKIP_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _aSkip(_, message):
     chat_id = message.chat.id
-
-    # Dapatkan daftar administrator
     administrators = []
     async for admin in app.get_chat_members(chat_id, filter=ChatMembersFilter.ADMINISTRATORS):
         administrators.append(admin)
 
     if (message.from_user.id in SUDOERS) or (message.from_user.id in [admin.user.id for admin in administrators]):
-        # Periksa apakah ada lagu yang sedang diputar
         if is_queue_empty(chat_id):
             await message.reply_text("Tidak ada lagu yang sedang diputar untuk di-skip.")
             return

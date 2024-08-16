@@ -19,13 +19,13 @@ def testspeed(m):
     try:
         test = speedtest.Speedtest()
         test.get_best_server()
-        m = m.edit("Running Download SpeedTest")
+        m = m.edit("Test Download SpeedTest")
         test.download()
-        m = m.edit("Running Upload SpeedTest")
+        m = m.edit("Test Upload SpeedTest")
         test.upload()
         test.results.share()
         result = test.results.dict()
-        m = m.edit("Sharing SpeedTest Results")
+        m = m.edit("Hasil:")
     except Exception as e:
         return m.edit(e)
     return result
@@ -42,10 +42,10 @@ def testspeed(m):
     & SUDOERS
 )
 async def speedtest_function(client, message):
-    m = await message.reply_text("Running Speed test")
+    m = await message.reply_text("Menjalankan Speed Test")
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, testspeed, m)
-    output = f"""**Speedtest Results**
+    output = f"""**Hasil Speedtest by Ookla**
 
 __**Client:**__
 **__ISP:__** {result['client']['isp']}

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# git pull
+git clone https://github.com/nandoxscr/msk
+rm -rf YMusic
+mv msk/* .
+rm -rf msk

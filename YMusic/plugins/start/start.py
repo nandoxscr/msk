@@ -32,12 +32,12 @@ HELP_MESSAGE = f"""
 **More commands coming soon!**
 """
 
-@app.on_message(filters.private & filters.command(START_COMMAND, PREFIX))
-async def _start(_, message):
-    await message.reply_text(
-        "Hey user how are you.\nIf you need any help just ping me I am here to help you."
-    )
+# @app.on_message(filters.private & filters.command(START_COMMAND, PREFIX))
+# async def _start(_, message):
+    # await message.reply_text(
+        # "Hey user how are you.\nIf you need any help just ping me I am here to help you."
+    # )
 
-@app.on_message(filters.command(HELP_COMMAND, PREFIX))
-async def _help(_, message):
-    await message.reply_text(HELP_MESSAGE)
+# @app.on_message(filters.command(HELP_COMMAND, PREFIX))
+# async def _help(_, message):
+    # await message.reply_text(HELP_MESSAGE)

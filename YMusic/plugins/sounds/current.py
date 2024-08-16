@@ -5,14 +5,13 @@ from pyrogram import filters
 import time
 import config
 
-CURRENT_COMMAND = ["CURRENT"]
+CURRENT_COMMAND = ["CURRENT", "CR"]
 PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
 
-# Dictionary untuk menyimpan waktu mulai pemutaran untuk setiap chat
 PLAY_START_TIME = {}
 
-# Fungsi untuk memformat detik menjadi format menit:detik
+
 def format_time(seconds):
     minutes, seconds = divmod(int(seconds), 60)
     return f"{minutes:02d}:{seconds:02d}"
@@ -32,7 +31,6 @@ async def _current(_, message):
         duration = current_song['duration']
         link = current_song['link']
 
-        # Hitung waktu yang telah berlalu
         if chat_id in PLAY_START_TIME:
             elapsed_time = int(time.time() - PLAY_START_TIME[chat_id])
             current_time = format_time(elapsed_time)
@@ -57,11 +55,9 @@ async def _current(_, message):
     except Exception as e:
         await message.reply_text(f"Terjadi kesalahan: {str(e)}")
 
-# Fungsi untuk memulai penghitungan waktu saat lagu mulai diputar
 async def start_play_time(chat_id):
     PLAY_START_TIME[chat_id] = time.time()
 
-# Fungsi untuk menghentikan penghitungan waktu saat lagu selesai
 async def stop_play_time(chat_id):
     if chat_id in PLAY_START_TIME:
         del PLAY_START_TIME[chat_id]

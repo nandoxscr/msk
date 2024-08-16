@@ -55,7 +55,6 @@ async def download_audio(link, file_name):
             duration = info.get('duration')
             title = info.get('title')
             
-            # Periksa pembatalan sebelum mulai mengunduh
             if asyncio.current_task().cancelled():
                 print("Download cancelled")
                 return None, None, None
