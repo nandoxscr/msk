@@ -1,23 +1,34 @@
 from YMusic import app
 from YMusic.core import userbot
 from YMusic.utils.ytDetails import searchYt, extract_video_id, download_audio
-from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty
+from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty, get_queue
 from YMusic.misc import SUDOERS
 
 from pyrogram import filters
+from collections import defaultdict
 
 import asyncio
 import time
 import config
 
+# Variabel global
 PLAY_COMMAND = ["P", "PLAY"]
+PLAYLIST_COMMAND = ["PLAYLIST", "QUEUE"]
+CANCEL_COMMAND = ["CANCEL"]
 PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
+ONGOING_PROCESSES = defaultdict(lambda: None)
 
 @app.on_message((filters.command(PLAY_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _aPlay(_, message):
     start_time = time.time()
     chat_id = message.chat.id
+    
+    if ONGOING_PROCESSES[chat_id]:
+        await message.reply_text("Proses lain sedang berlangsung. Gunakan .cancel untuk membatalkannya terlebih dahulu.")
+        return
+
+    ONGOING_PROCESSES[chat_id] = "play"
     
     async def process_audio(title, duration, audio_file, link):
         queue_num = add_to_queue(chat_id, title[:19], duration, audio_file, link)
@@ -52,18 +63,60 @@ async def _aPlay(_, message):
         try:
             title, duration, link = await searchYt(query)
             if not title:
+                ONGOING_PROCESSES[chat_id] = None
                 return await m.edit("Tidak ada hasil ditemukan")
+            
+            if ONGOING_PROCESSES[chat_id] is None:
+                return await m.edit("Proses dibatalkan.")
             
             await m.edit("Tunggu...Saya sedang mengunduh lagu Anda....")
             file_name = f"{title[:50]}"
             audio_file, downloaded_title, audio_duration = await download_audio(link, file_name)
             
+            if ONGOING_PROCESSES[chat_id] is None:
+                return await m.edit("Proses dibatalkan.")
+            
             if not audio_file:
+                ONGOING_PROCESSES[chat_id] = None
                 return await m.edit("Gagal mengunduh audio. Silakan coba lagi.")
             
             await process_audio(downloaded_title, audio_duration, audio_file, link)
         
         except Exception as e:
             await message.reply_text(f"Error:- <code>{e}</code>")
+        finally:
+            ONGOING_PROCESSES[chat_id] = None
+
+@app.on_message((filters.command(PLAYLIST_COMMAND, [PREFIX, RPREFIX])) & filters.group)
+async def _playlist(_, message):
+    chat_id = message.chat.id
+    if is_queue_empty(chat_id):
+        await message.reply_text("Antrian lagu kosong.")
+        return
+
+    queue = get_queue(chat_id)
+    playlist = "🎵 **Daftar Antrian Lagu:**\n\n"
+    for i, song in enumerate(queue, start=1):
+        playlist += f"{i}. **{song['title']}** - {song['duration']}\n"
+        if i == 1:
+            playlist += "   ▶️ Sedang diputar\n"
+        if i == 10:
+            break  # Batasi hanya 10 lagu yang ditampilkan
+
+    if len(queue) > 10:
+        playlist += f"\nDan {len(queue) - 10} lagu lainnya..."
+
+    await message.reply_text(playlist)
+
+@app.on_message((filters.command(CANCEL_COMMAND, [PREFIX, RPREFIX])) & filters.group)
+async def _cancel(_, message):
+    chat_id = message.chat.id
+    
+    if not ONGOING_PROCESSES[chat_id]:
+        await message.reply_text("Tidak ada proses yang sedang berlangsung untuk dibatalkan.")
+        return
+
+    ONGOING_PROCESSES[chat_id] = None
+    await message.reply_text("Proses dibatalkan.")
 
 # Fungsi tambahan jika diperlukan bisa ditambahkan di sini
