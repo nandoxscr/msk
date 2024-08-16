@@ -30,7 +30,7 @@ async def _aSkip(_, message):
         administrators.append(admin)
 
     if (message.from_user.id in SUDOERS) or (message.from_user.id in [admin.user.id for admin in administrators]):
-        m = await message.reply_text("Mencoba melewati lagu saat ini...")
+        m = await message.reply_text("Mencoba melewati lagu saat ini...", disable_web_page_preview=True,)
         
         try:
             result = await _skip(chat_id)
