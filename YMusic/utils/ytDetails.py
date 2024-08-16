@@ -28,7 +28,7 @@ async def download_audio(link, file_name):
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
+            'preferredcodec': 'aac',
             'preferredquality': '320',
         }, {
             'key': 'FFmpegMetadata',
@@ -38,11 +38,11 @@ async def download_audio(link, file_name):
         'cookiefile': config.COOK_PATH,
         'ffmpeg_location': '/usr/bin/ffmpeg',
         'postprocessor_args': [
-            '-acodec', 'libmp3lame',
+            '-acodec', 'aac',
             '-b:a', '320k',
             '-ar', '48000',
             '-ac', '2',
-            '-q:a', '0',
+            '-af', 'acompressor=threshold=-10dB:ratio=4:attack=200:release=1000,volume=2dB',
         ],
         'prefer_ffmpeg': True,
         'keepvideo': False,
@@ -61,7 +61,7 @@ async def download_audio(link, file_name):
             
             ydl.download([link])
         
-        output_file = os.path.join(output_path, f'{file_name}.mp3')
+        output_file = os.path.join(output_path, f'{file_name}.aac')
         return output_file, title, duration
     except asyncio.CancelledError:
         print("Download cancelled")

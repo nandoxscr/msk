@@ -35,7 +35,7 @@ async def _aPlay(_, message):
     async def process_audio(title, duration, audio_file, link):
         queue_num = add_to_queue(chat_id, title[:19], duration, audio_file, link)
         if get_queue_length(chat_id) > 1:
-            await m.edit(f"# {queue_num}\n{title[:19]}\nSaya telah memasukkan lagu Anda ke dalam antrian.")
+            await m.edit(f"# {queue_num}\n{title}\nSaya telah memasukkan lagu Anda ke dalam antrian.")
         else:
             Status, Text = await userbot.playAudio(chat_id, audio_file)
             if not Status:
@@ -45,7 +45,7 @@ async def _aPlay(_, message):
                 await start_play_time(chat_id)
                 total_time_taken = str(int(finish_time - start_time)) + "s"
                 await m.edit(
-                    f"Saya sedang memutar lagu Anda sekarang\n\nNama Lagu:- [{title[:19]}]({link})\nDurasi:- {duration}\nWaktu yang dibutuhkan untuk memutar:- {total_time_taken}",
+                    f"Saya sedang memutar lagu Anda sekarang\n\nNama Lagu:- [{title}]({link})\nDurasi:- {duration}\nWaktu yang dibutuhkan untuk memutar:- {total_time_taken}",
                     disable_web_page_preview=True,
                 )
 
@@ -70,7 +70,7 @@ async def _aPlay(_, message):
                 return await m.edit("Tidak ada hasil ditemukan")
             
             await m.edit("Tunggu...Saya sedang mengunduh lagu Anda....")
-            file_name = f"{title[:50]}"
+            file_name = f"{title}"
             audio_file, downloaded_title, audio_duration = await download_audio(link, file_name)
             
             if not audio_file:
