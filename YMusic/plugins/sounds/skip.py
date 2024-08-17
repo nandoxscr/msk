@@ -45,7 +45,7 @@ async def _aSkip(_, message):
                 title, duration, link, _ = result
                 await start_play_time(chat_id)
                 await m.edit(
-                    f"Berhasil melewati lagu. Sekarang memutar:\n\n"
+                    f"Berhasil melewati lagu. Sedang diputar:\n\n"
                     f"Judul: {title}\n"
                     f"Durasi: {duration}\n"
                     f"Link: {link}",
@@ -59,5 +59,5 @@ async def _aSkip(_, message):
         except Exception as e:
             await m.edit(f"Terjadi kesalahan: {str(e)}")
     else:
-        await message.reply_text("Maaf, hanya admin dan SUDOERS yang dapat melewati lagu.")
+        await message.reply_text("Maaf, hanya admin dan user yang di izinkan yang dapat melewati lagu.")
         

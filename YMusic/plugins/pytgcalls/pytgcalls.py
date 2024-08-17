@@ -39,7 +39,6 @@ async def _skip(chat_id):
 async def handler(client: PyTgCalls, update: Update):
     chat_id = update.chat_id
     try:
-        pop_an_item(chat_id)
         if is_queue_empty(chat_id):
             await stop(chat_id)
             clear_downloads_cache()
@@ -56,13 +55,13 @@ async def handler(client: PyTgCalls, update: Update):
                     disable_web_page_preview=True
                 )
             else:
-                await app.send_message(chat_id, "Tidak dapat memutar lagu berikutnya. Meninggalkan obrolan suara.")
+                await app.send_message(chat_id, "Tidak dapat memutar lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
                 await stop(chat_id)
                 await stop_play_time(chat_id)
                 clear_downloads_cache()
     except Exception as e:
         print(f"Error in stream_end handler: {e}")
-        await app.send_message(chat_id, "Terjadi kesalahan saat mencoba memutar lagu berikutnya. Meninggalkan obrolan suara.")
+        await app.send_message(chat_id, "Terjadi kesalahan saat mencoba memutar lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
         await stop(chat_id)
         await stop_play_time(chat_id)
         clear_downloads_cache()

@@ -35,7 +35,7 @@ async def _aPlay(_, message):
     async def process_audio(title, duration, audio_file, link):
         queue_num = add_to_queue(chat_id, title[:19], duration, audio_file, link)
         if get_queue_length(chat_id) > 1:
-            await m.edit(f"#{queue_num} - {title}\nSaya telah memasukkan lagu Anda ke dalam antrian.")
+            await m.edit(f"#{queue_num} - {title}\n\nDitambahkan di daftar putar.")
         else:
             Status, Text = await userbot.playAudio(chat_id, audio_file)
             if not Status:
@@ -45,13 +45,13 @@ async def _aPlay(_, message):
                 await start_play_time(chat_id)
                 total_time_taken = str(int(finish_time - start_time)) + "s"
                 await m.edit(
-                    f"Saya sedang memutar lagu Anda sekarang\n\nNama Lagu:- [{title}]({link})\nDurasi:- {duration}\nWaktu yang dibutuhkan untuk memutar:- {total_time_taken}",
+                    f"Sedang diputar\n\nJudul: [{title}]({link})\nDurasi: {duration}",
                     disable_web_page_preview=True,
                 )
 
     try:
         if message.reply_to_message and (message.reply_to_message.audio or message.reply_to_message.voice):
-            m = await message.reply_text("Tunggu...Saya sedang memproses audio Anda....")
+            m = await message.reply_text("Memproses audio....")
             audio_file = await message.reply_to_message.download()
             title = message.reply_to_message.audio.title if message.reply_to_message.audio else "Voice Message"
             duration = message.reply_to_message.audio.duration if message.reply_to_message.audio else 0
@@ -62,19 +62,19 @@ async def _aPlay(_, message):
             await message.reply_text("Mau lagu apa tuan? 🙏")
         
         else:
-            m = await message.reply_text("Tunggu...Saya sedang mencari lagu Anda....")
+            m = await message.reply_text("Mencari lagu di youtube....")
             query = message.text.split(maxsplit=1)[1]
             
             title, duration, link = await searchYt(query)
             if not title:
                 return await m.edit("Tidak ada hasil ditemukan")
             
-            await m.edit("Tunggu...Saya sedang mengunduh lagu Anda....")
+            await m.edit("Mengunduh audio...")
             file_name = f"{title}"
             audio_file, downloaded_title, audio_duration = await download_audio(link, file_name)
             
             if not audio_file:
-                return await m.edit("Gagal mengunduh audio. Silakan coba lagi.")
+                return await m.edit("Gagal mengunduh audio. coba lagi.")
             
             await process_audio(downloaded_title, audio_duration, audio_file, link)
 
