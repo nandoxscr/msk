@@ -35,7 +35,7 @@ async def _aPlay(_, message):
     async def process_audio(title, duration, audio_file, link):
         queue_num = add_to_queue(chat_id, title[:19], duration, audio_file, link)
         if get_queue_length(chat_id) > 1:
-            await m.edit(f"# {queue_num}\n{title}\nSaya telah memasukkan lagu Anda ke dalam antrian.")
+            await m.edit(f"#{queue_num} - {title}\nSaya telah memasukkan lagu Anda ke dalam antrian.")
         else:
             Status, Text = await userbot.playAudio(chat_id, audio_file)
             if not Status:

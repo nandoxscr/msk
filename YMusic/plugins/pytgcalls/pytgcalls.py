@@ -39,6 +39,7 @@ async def _skip(chat_id):
 async def handler(client: PyTgCalls, update: Update):
     chat_id = update.chat_id
     try:
+        pop_an_item(chat_id)
         if is_queue_empty(chat_id):
             await stop(chat_id)
             clear_downloads_cache()
