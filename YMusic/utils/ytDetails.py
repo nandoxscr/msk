@@ -14,7 +14,11 @@ async def searchYt(query):
         title = result["result"][0]["title"]
         duration = result["result"][0]["duration"]
         link = result["result"][0]["link"]
-        return title, duration, link
+        
+        duration_parts = duration.split(':')
+        duration_seconds = sum(int(x) * 60 ** i for i, x in enumerate(reversed(duration_parts)))
+        
+        return title, duration_seconds, link
     except Exception as e:
         print(f"Error in searchYt: {e}")
         return None, None, None

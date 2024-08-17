@@ -7,6 +7,7 @@ API_HASH = getenv("API_HASH")
 SESSION_STRING = getenv("SESSION_STRING")
 OWNER_ID = int(getenv("OWNER_ID", 0))
 COOK_PATH = getenv("COOK_PATH")
+MAX_DURATION_MINUTES = int(getenv("MAX_DURATION_MINUTES", 30))
 PREFIX = "."
 RPREFIX = "$"
 

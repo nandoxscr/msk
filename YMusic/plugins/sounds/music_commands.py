@@ -34,6 +34,12 @@ async def _aPlay(_, message):
 
     async def process_audio(title, duration, audio_file, link):
         try:
+            duration_minutes = duration / 60 if isinstance(duration, (int, float)) else 0
+
+            if duration_minutes > config.MAX_DURATION_MINUTES:
+                await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+                return
+
             queue_num = add_to_queue(chat_id, title[:19], duration, audio_file, link)
             if get_queue_length(chat_id) > 1:
                 await m.edit(f"#{queue_num} - {title}\n\nDitambahkan di daftar putar.")
@@ -55,6 +61,10 @@ async def _aPlay(_, message):
             await m.edit(f"Terjadi kesalahan saat memproses audio: {str(e)}")
     try:
         if message.reply_to_message and (message.reply_to_message.audio or message.reply_to_message.voice):
+            if duration > config.MAX_DURATION_MINUTES * 60:  # Konversi ke detik
+                await message.reply_text(f"Maaf, audio ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+                return
+
             m = await message.reply_text("Memproses audio....")
             audio_file = await message.reply_to_message.download()
             title = message.reply_to_message.audio.title if message.reply_to_message.audio else "Voice Message"
@@ -72,6 +82,12 @@ async def _aPlay(_, message):
             title, duration, link = await searchYt(query)
             if not title:
                 return await m.edit("Tidak ada hasil ditemukan")
+            
+            if duration:
+                duration_minutes = duration / 60  # Karena duration sekarang dalam detik
+                if duration_minutes > config.MAX_DURATION_MINUTES:
+                    await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+                    return
             
             await m.edit("Mengunduh audio...")
             file_name = f"{title}"

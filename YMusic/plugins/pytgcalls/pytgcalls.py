@@ -13,16 +13,16 @@ import time
 async def _skip(chat_id):
     if is_queue_empty(chat_id):
         print(f"Queue empty for chat {chat_id}")
-        return None
+        return 1
 
     current_song = pop_an_item(chat_id)
     print(f"Skipped song: {current_song['title']} in chat {chat_id}")
 
     if is_queue_empty(chat_id):
         print(f"No more songs in queue for chat {chat_id}")
-        return 1  # Menandakan bahwa ini adalah lagu terakhir
+        return 1
 
-    next_song = get_queue(chat_id)[0]  # Ambil lagu berikutnya tanpa menghapusnya dari antrian
+    next_song = get_queue(chat_id)[0]
     try:
         print(f"Attempting to play next song: {next_song['title']} in chat {chat_id}")
         await call.play(
@@ -37,6 +37,7 @@ async def _skip(chat_id):
         print(f"Error in _skip for chat {chat_id}: {e}")
         return None
 
+
 @call.on_update(filters.stream_end)
 async def handler(client: PyTgCalls, update: Update):
     chat_id = update.chat_id
@@ -49,27 +50,27 @@ async def handler(client: PyTgCalls, update: Update):
             await stop_play_time(chat_id)
             await app.send_message(chat_id, "Semua lagu telah diputar. Meninggalkan obrolan suara dan membersihkan cache.")
         else:
-            current_song = get_current_song(chat_id)  # Tambahkan fungsi ini di queue.py
-            if current_song:
-                print(f"Current song for chat {chat_id}: {current_song['title']}")
-                result = await _skip(chat_id)
-                if result:
-                    title, duration, link, _ = result
-                    await start_play_time(chat_id)
-                    await app.send_message(
-                        chat_id,
-                        f"Memutar lagu berikutnya:\n\nJudul: {title}\nDurasi: {duration}\nLink: {link}",
-                        disable_web_page_preview=True
-                    )
-                else:
-                    print(f"Failed to play next song for chat {chat_id}")
-                    await app.send_message(chat_id, "Tidak dapat memutar lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
-                    await stop(chat_id)
-                    await stop_play_time(chat_id)
-                    clear_downloads_cache()
+            result = await _skip(chat_id)
+            if result == 1:
+                print(f"No more songs in queue for chat {chat_id}")
+                await app.send_message(chat_id, "Tidak ada lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
+                await stop(chat_id)
+                await stop_play_time(chat_id)
+                clear_downloads_cache()
+            elif isinstance(result, list):
+                title, duration, link, _ = result
+                await start_play_time(chat_id)
+                await app.send_message(
+                    chat_id,
+                    f"Memutar lagu berikutnya:\n\nJudul: {title}\nDurasi: {duration}\nLink: {link}",
+                    disable_web_page_preview=True
+                )
             else:
-                print(f"No current song for chat {chat_id}, but queue is not empty")
-                # Handle this case, maybe try to play the next song
+                print(f"Unexpected result from _skip for chat {chat_id}: {result}")
+                await app.send_message(chat_id, "Terjadi kesalahan saat mencoba memutar lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
+                await stop(chat_id)
+                await stop_play_time(chat_id)
+                clear_downloads_cache()
     except Exception as e:
         print(f"Error in stream_end handler for chat {chat_id}: {e}")
         await app.send_message(chat_id, f"Terjadi kesalahan saat mencoba memutar lagu berikutnya: {str(e)}. Meninggalkan obrolan suara dan membersihkan cache.")
