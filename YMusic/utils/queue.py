@@ -9,6 +9,11 @@ def add_to_queue(chat_id, title, duration, audio_file, link):
 def get_queue(chat_id):
     return QUEUE.get(chat_id, [])
 
+def get_current_song(chat_id):
+    if chat_id in QUEUE and QUEUE[chat_id]:
+        return QUEUE[chat_id][0]
+    return None
+
 def pop_an_item(chat_id):
     if chat_id in QUEUE and QUEUE[chat_id]:
         item = QUEUE[chat_id].pop(0)

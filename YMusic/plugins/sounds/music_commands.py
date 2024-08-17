@@ -38,6 +38,7 @@ async def _aPlay(_, message):
             if get_queue_length(chat_id) > 1:
                 await m.edit(f"#{queue_num} - {title}\n\nDitambahkan di daftar putar.")
             else:
+                print(f"Playing first song for chat {chat_id}: {title}")
                 Status, Text = await userbot.playAudio(chat_id, audio_file)
                 if not Status:
                     await m.edit(Text)
@@ -50,9 +51,8 @@ async def _aPlay(_, message):
                         disable_web_page_preview=True,
                     )
         except Exception as e:
-            print(f"Error in process_audio: {e}")
+            print(f"Error in process_audio for chat {chat_id}: {e}")
             await m.edit(f"Terjadi kesalahan saat memproses audio: {str(e)}")
-
     try:
         if message.reply_to_message and (message.reply_to_message.audio or message.reply_to_message.voice):
             m = await message.reply_text("Memproses audio....")
