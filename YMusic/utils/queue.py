@@ -14,7 +14,9 @@ def pop_an_item(chat_id):
         item = QUEUE[chat_id].pop(0)
         if not QUEUE[chat_id]:
             del QUEUE[chat_id]
+        print(f"Popped item from queue for chat {chat_id}: {item['title']}")
         return item
+    print(f"No items in queue for chat {chat_id}")
     return None
 
 def clear_queue(chat_id):

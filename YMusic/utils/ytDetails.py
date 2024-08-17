@@ -34,7 +34,7 @@ async def download_audio(link, file_name):
         'outtmpl': os.path.join(output_path, f'{file_name}.%(ext)s'),
         'cookiefile': config.COOK_PATH,
         'ffmpeg_location': '/usr/bin/ffmpeg', 
-        'verbose': True, 
+        'verbose': False, 
     }
 
     try:

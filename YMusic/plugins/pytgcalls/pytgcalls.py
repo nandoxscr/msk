@@ -12,16 +12,16 @@ import time
 
 async def _skip(chat_id):
     if is_queue_empty(chat_id):
-        print("queue empty 1")
+        print(f"Queue empty for chat {chat_id}")
         return None
 
-    pop_an_item(chat_id)
-    if is_queue_empty(chat_id):
-        print("queue empty 2")
-        return 1
+    next_song = pop_an_item(chat_id)
+    if not next_song:
+        print(f"Failed to get next song for chat {chat_id}")
+        return None
 
-    next_song = QUEUE[chat_id][0]
     try:
+        print(f"Attempting to play next song: {next_song['title']} in chat {chat_id}")
         await call.play(
             chat_id,
             MediaStream(
@@ -31,7 +31,7 @@ async def _skip(chat_id):
         )
         return [next_song['title'], next_song['duration'], next_song['link'], time.time()]
     except Exception as e:
-        print(f"Error in _skip: {e}")
+        print(f"Error in _skip for chat {chat_id}: {e}")
         return None
 
 
@@ -46,7 +46,7 @@ async def handler(client: PyTgCalls, update: Update):
             await app.send_message(chat_id, "Semua lagu telah diputar. Meninggalkan obrolan suara dan membersihkan cache.")
         else:
             result = await _skip(chat_id)
-            if isinstance(result, list):
+            if result:
                 title, duration, link, _ = result
                 await start_play_time(chat_id)
                 await app.send_message(
@@ -61,7 +61,7 @@ async def handler(client: PyTgCalls, update: Update):
                 clear_downloads_cache()
     except Exception as e:
         print(f"Error in stream_end handler: {e}")
-        await app.send_message(chat_id, "Terjadi kesalahan saat mencoba memutar lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
+        await app.send_message(chat_id, f"Terjadi kesalahan saat mencoba memutar lagu berikutnya: {str(e)}. Meninggalkan obrolan suara dan membersihkan cache.")
         await stop(chat_id)
         await stop_play_time(chat_id)
         clear_downloads_cache()
