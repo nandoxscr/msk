@@ -32,14 +32,7 @@ async def _aPlay(_, message):
     ONGOING_PROCESSES[chat_id] = asyncio.current_task()
 
     async def process_audio(title, duration, audio_file, link):
-        # Konversi durasi ke menit
-        duration_minutes = duration / 60 if isinstance(duration, (int, float)) else 0
-        
-        if duration_minutes > config.MAX_DURATION_MINUTES:
-            await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
-            return
-
-        queue_num = add_to_queue(chat_id, title[:19], duration, audio_file, link)
+        queue_num = add_to_queue(chat_id, title, duration, audio_file, link)
         if get_queue_length(chat_id) > 1:
             await m.edit(f"#{queue_num} - {title}\n\nDitambahkan di daftar putar.")
         else:
@@ -108,26 +101,26 @@ async def _aPlay(_, message):
     finally:
         ONGOING_PROCESSES[chat_id] = None        
         
-@app.on_message((filters.command(PLAYLIST_COMMAND, [PREFIX, RPREFIX])) & filters.group)
+@app.on_message((filters.command(["PLAYLIST"], [PREFIX, RPREFIX])) & filters.group)
 async def _playlist(_, message):
     chat_id = message.chat.id
     if is_queue_empty(chat_id):
-        await message.reply_text("Antrian lagu kosong.")
-        return
-
-    queue = get_queue(chat_id)
-    playlist = "🎵 **Daftar Antrian Lagu:**\n\n"
-    for i, song in enumerate(queue, start=1):
-        playlist += f"{i}. **{song['title']}** - {song['duration']}\n"
-        if i == 1:
-            playlist += "   ▶️ Sedang diputar\n"
-        if i == 10:
-            break 
-
-    if len(queue) > 10:
-        playlist += f"\nDan {len(queue) - 10} lagu lainnya..."
-
-    await message.reply_text(playlist)
+        await message.reply_text("Daftar putar kosong.")
+    else:
+        queue = get_queue(chat_id)
+        playlist = "🎵 **Daftar Putar:**\n\n"
+        for i, song in enumerate(queue, start=1):
+            playlist += f"{i}. **{song['title']}** - {song['duration']}\n"
+            if i == 1:
+                playlist += "   ▶️ Sedang diputar\n"
+            if i == 10:
+                break
+        
+        if len(queue) > 10:
+            playlist += f"\nDan {len(queue) - 10} lagu lainnya..."
+        
+        await message.reply_text(playlist)
+        
 
 @app.on_message((filters.command(CANCEL_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _cancel(_, message):
