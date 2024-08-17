@@ -15,16 +15,14 @@ async def _skip(chat_id):
         print(f"Queue empty for chat {chat_id}")
         return None
 
-    current_song = get_current_song(chat_id)
-    if not current_song:
-        print(f"No current song for chat {chat_id}")
-        return None
+    current_song = pop_an_item(chat_id)
+    print(f"Skipped song: {current_song['title']} in chat {chat_id}")
 
-    next_song = pop_an_item(chat_id)
-    if not next_song:
-        print(f"Failed to get next song for chat {chat_id}")
-        return None
+    if is_queue_empty(chat_id):
+        print(f"No more songs in queue for chat {chat_id}")
+        return 1  # Menandakan bahwa ini adalah lagu terakhir
 
+    next_song = get_queue(chat_id)[0]  # Ambil lagu berikutnya tanpa menghapusnya dari antrian
     try:
         print(f"Attempting to play next song: {next_song['title']} in chat {chat_id}")
         await call.play(

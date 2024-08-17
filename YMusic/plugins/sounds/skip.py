@@ -34,13 +34,10 @@ async def _aSkip(_, message):
         await stop_play_time(chat_id)
         try:
             result = await _skip(chat_id)
-            if isinstance(result, int):
-                if result == 1:
-                    await m.edit("Antrian kosong. Meninggalkan obrolan suara...")
-                    await stop(chat_id)
-                    clear_downloads_cache()
-                else:
-                    await m.edit("Terjadi kesalahan saat melewati lagu.")
+            if result == 1:
+                await m.edit("Tidak ada lagu berikutnya. Meninggalkan obrolan suara...")
+                await stop(chat_id)
+                clear_downloads_cache()
             elif isinstance(result, list):
                 title, duration, link, _ = result
                 await start_play_time(chat_id)
@@ -52,12 +49,11 @@ async def _aSkip(_, message):
                     disable_web_page_preview=True
                 )
             else:
-                await m.edit("Terjadi kesalahan yang tidak terduga saat melewati lagu.")
+                await m.edit("Tidak ada lagu berikutnya. Meninggalkan obrolan suara...")
+                await stop(chat_id)
+                clear_downloads_cache()
         
-        except IndexError:
-            await m.edit("Lagu berhasil dilewati, tetapi terjadi kesalahan saat mengambil informasi lagu berikutnya.")
         except Exception as e:
             await m.edit(f"Terjadi kesalahan: {str(e)}")
     else:
-        await message.reply_text("Maaf, hanya admin dan user yang di izinkan yang dapat melewati lagu.")
-        
+        await message.reply_text("Maaf, hanya admin dan user yang diizinkan yang dapat melewati lagu.")
