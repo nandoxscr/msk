@@ -41,14 +41,18 @@ async def _skip(chat_id):
 async def handler(client: PyTgCalls, update: Update):
     chat_id = update.chat_id
     try:
+        print(f"Stream ended for chat {chat_id}")
+        pop_an_item(chat_id)
         if is_queue_empty(chat_id):
+            print(f"Queue is empty for chat {chat_id}")
             await stop(chat_id)
             clear_downloads_cache()
             await stop_play_time(chat_id)
             await app.send_message(chat_id, "Semua lagu telah diputar. Meninggalkan obrolan suara dan membersihkan cache.")
         else:
-            next_song = get_queue(chat_id)[0]  # Ambil lagu berikutnya tanpa menghapusnya
+            next_song = get_queue(chat_id)[0]  # Ambil lagu berikutnya
             try:
+                print(f"Attempting to play next song: {next_song['title']} in chat {chat_id}")
                 await call.play(
                     chat_id,
                     MediaStream(
@@ -62,15 +66,14 @@ async def handler(client: PyTgCalls, update: Update):
                     f"Memutar lagu berikutnya:\n\nJudul: {next_song['title']}\nDurasi: {next_song['duration']}\nLink: {next_song['link']}",
                     disable_web_page_preview=True
                 )
-                pop_an_item(chat_id)  # Hapus lagu dari antrian setelah mulai diputar
             except Exception as e:
-                print(f"Error playing next song: {e}")
+                print(f"Error playing next song in chat {chat_id}: {e}")
                 await app.send_message(chat_id, "Terjadi kesalahan saat mencoba memutar lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
                 await stop(chat_id)
                 await stop_play_time(chat_id)
                 clear_downloads_cache()
     except Exception as e:
-        print(f"Error in stream_end handler: {e}")
+        print(f"Error in stream_end handler for chat {chat_id}: {e}")
         await app.send_message(chat_id, f"Terjadi kesalahan: {str(e)}. Meninggalkan obrolan suara dan membersihkan cache.")
         await stop(chat_id)
         await stop_play_time(chat_id)
