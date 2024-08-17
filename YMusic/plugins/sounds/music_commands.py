@@ -73,7 +73,6 @@ async def _aPlay(_, message):
             if not title:
                 return await m.edit("Tidak ada hasil ditemukan")
             
-            # Periksa durasi sebelum mengunduh
             if duration is not None:
                 duration_minutes = duration / 60  # Karena duration sekarang dalam detik
                 if duration_minutes > config.MAX_DURATION_MINUTES:
@@ -89,7 +88,6 @@ async def _aPlay(_, message):
             if not audio_file:
                 return await m.edit("Gagal mengunduh audio. coba lagi.")
             
-            # Gunakan audio_duration jika duration dari searchYt adalah None
             final_duration = audio_duration if duration is None else duration
             
             await process_audio(downloaded_title, final_duration, audio_file, link)
@@ -100,8 +98,8 @@ async def _aPlay(_, message):
         await message.reply_text(f"Error:- <code>{e}</code>")
     finally:
         ONGOING_PROCESSES[chat_id] = None        
-        
-@app.on_message((filters.command(["PLAYLIST"], [PREFIX, RPREFIX])) & filters.group)
+
+@app.on_message((filters.command(PLAYLIST_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _playlist(_, message):
     chat_id = message.chat.id
     if is_queue_empty(chat_id):
@@ -110,9 +108,18 @@ async def _playlist(_, message):
         queue = get_queue(chat_id)
         playlist = "🎵 **Daftar Putar:**\n\n"
         for i, song in enumerate(queue, start=1):
-            playlist += f"{i}. **{song['title']}** - {song['duration']}\n"
+            duration = song['duration']
+            if isinstance(duration, int):
+                minutes, seconds = divmod(duration, 60)
+                duration_str = f"{minutes:02d}:{seconds:02d}"
+            else:
+                duration_str = duration
+
             if i == 1:
-                playlist += "   ▶️ Sedang diputar\n"
+                playlist += f"{i}. ▶️ **{song['title']}** - {duration_str}\n"
+            else:
+                playlist += f"{i}. **{song['title']}** - {duration_str}\n"
+            
             if i == 10:
                 break
         
@@ -121,7 +128,6 @@ async def _playlist(_, message):
         
         await message.reply_text(playlist)
         
-
 @app.on_message((filters.command(CANCEL_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _cancel(_, message):
     chat_id = message.chat.id
