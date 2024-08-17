@@ -10,3 +10,13 @@ def clear_downloads_cache():
             print(f"Removed file: {f}")
         except Exception as e:
             print(f"Error removing {f}: {e}")
+            
+async def delete_file(file_path):
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"File deleted successfully: {file_path}")
+        else:
+            print(f"File does not exist: {file_path}")
+    except Exception as e:
+        print(f"Error deleting file {file_path}: {e}")

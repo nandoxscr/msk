@@ -2,6 +2,7 @@ from YMusic import app
 from YMusic.core import userbot
 from YMusic.utils.ytDetails import searchYt, extract_video_id, download_audio
 from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty, get_queue
+from YMusic.utils.utils import delete_file
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 from YMusic.misc import SUDOERS
 
@@ -32,8 +33,15 @@ async def _aPlay(_, message):
     ONGOING_PROCESSES[chat_id] = asyncio.current_task()
 
     async def process_audio(title, duration, audio_file, link):
-        queue_num = add_to_queue(chat_id, title[:19], duration, audio_file, link)
-        if queue_num == 1:  # Jika ini adalah lagu pertama
+        duration_minutes = duration / 60 if isinstance(duration, (int, float)) else 0
+        
+        if duration_minutes > config.MAX_DURATION_MINUTES:
+            await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+            delete_file(audio_file)
+            return
+
+        queue_num = add_to_queue(chat_id, title, duration, audio_file, link)
+        if queue_num == 1:
             Status, Text = await userbot.playAudio(chat_id, audio_file)
             if not Status:
                 await m.edit(Text)
@@ -58,6 +66,7 @@ async def _aPlay(_, message):
             
             if duration > config.MAX_DURATION_MINUTES * 60:  # Konversi ke detik
                 await m.edit(f"Maaf, audio ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+                await delete_file(audio_file) 
                 return
             
             await process_audio(title, duration, audio_file, link)
@@ -75,11 +84,9 @@ async def _aPlay(_, message):
             
             if duration is not None:
                 duration_minutes = duration / 60  # Karena duration sekarang dalam detik
-                if duration_minutes > config.MAX_DURATION_MINUTES:
-                    await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+                if duration_minutes > MAX_DURATION_MINUTES:
+                    await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {MAX_DURATION_MINUTES} menit.")
                     return
-            else:
-                await m.edit("Tidak dapat menentukan durasi lagu. Mencoba mengunduh...")
             
             await m.edit("Mengunduh audio...")
             file_name = f"{title}"
@@ -88,9 +95,12 @@ async def _aPlay(_, message):
             if not audio_file:
                 return await m.edit("Gagal mengunduh audio. coba lagi.")
             
-            final_duration = audio_duration if duration is None else duration
+            if audio_duration > MAX_DURATION_MINUTES * 60:
+                await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {MAX_DURATION_MINUTES} menit.")
+                await delete_file(audio_file)
+                return
             
-            await process_audio(downloaded_title, final_duration, audio_file, link)
+            await process_audio(downloaded_title, audio_duration, audio_file, link)
 
     except asyncio.CancelledError:
         await message.reply_text("Proses dibatalkan.")
