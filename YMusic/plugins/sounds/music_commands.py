@@ -84,8 +84,8 @@ async def _aPlay(_, message):
             
             if duration is not None:
                 duration_minutes = duration / 60  # Karena duration sekarang dalam detik
-                if duration_minutes > MAX_DURATION_MINUTES:
-                    await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {MAX_DURATION_MINUTES} menit.")
+                if duration_minutes > config.MAX_DURATION_MINUTES:
+                    await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
                     return
             
             await m.edit("Mengunduh audio...")
@@ -95,8 +95,8 @@ async def _aPlay(_, message):
             if not audio_file:
                 return await m.edit("Gagal mengunduh audio. coba lagi.")
             
-            if audio_duration > MAX_DURATION_MINUTES * 60:
-                await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {MAX_DURATION_MINUTES} menit.")
+            if audio_duration > config.MAX_DURATION_MINUTES * 60:
+                await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
                 await delete_file(audio_file)
                 return
             
