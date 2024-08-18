@@ -43,6 +43,31 @@ async def handler(client: PyTgCalls, update: Update):
     chat_id = update.chat_id
     try:
         print(f"Stream ended for chat {chat_id}")
+        
+        loop_count = await get_loop(chat_id)
+        current_song = get_current_song(chat_id)
+        
+        if loop_count > 0 and current_song:
+            await set_loop(chat_id, loop_count - 1)
+            
+            await call.play(
+                chat_id,
+                MediaStream(
+                    current_song['audio_file'],
+                    video_flags=MediaStream.Flags.IGNORE,
+                ),
+            )
+            duration_str = format_time(current_song['duration'])
+            await app.send_message(
+                chat_id,
+                f"🔁 Memutar ulang: [{current_song['title']}]({current_song['link']})\n"
+                f"Durasi: {duration_str}\n"
+                f"Sisa loop: {loop_count - 1}",
+                disable_web_page_preview=True
+            )
+            await start_play_time(chat_id)
+            return
+
         pop_an_item(chat_id)
         if is_queue_empty(chat_id):
             print(f"Queue is empty for chat {chat_id}")

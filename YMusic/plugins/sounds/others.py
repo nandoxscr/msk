@@ -84,7 +84,6 @@ async def _resume(_, message):
 
 @app.on_message(filters.command(LOOP_COMMAND, PREFIX))
 async def _loop(_, message):
-    # Get administrators
     administrators = []
     async for m in app.get_chat_members(
         message.chat.id, filter=ChatMembersFilter.ADMINISTRATORS
@@ -109,11 +108,10 @@ async def _loop(_, message):
         return await message.reply_text(
             "Hanya Admin Saja"
         )
-
-
+    
 @app.on_message(filters.command(LOOPEND_COMMAND, PREFIX))
 async def _endLoop(_, message):
-    # Get administrators
+
     administrators = []
     async for m in app.get_chat_members(
         message.chat.id, filter=ChatMembersFilter.ADMINISTRATORS
