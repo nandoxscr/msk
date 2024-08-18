@@ -1,13 +1,19 @@
 QUEUE = {}
+MAX_QUEUE_SIZE = 10
 
 def add_to_queue(chat_id, title, duration, audio_file, link):
     if chat_id not in QUEUE:
         QUEUE[chat_id] = []
+    if len(QUEUE[chat_id]) >= MAX_QUEUE_SIZE:
+        return False
     QUEUE[chat_id].append({"title": title, "duration": duration, "audio_file": audio_file, "link": link})
     return len(QUEUE[chat_id])
 
 def get_queue(chat_id):
     return QUEUE.get(chat_id, [])
+
+def get_queue_length(chat_id):
+    return len(QUEUE.get(chat_id, []))
 
 def get_current_song(chat_id):
     if chat_id in QUEUE and QUEUE[chat_id]:

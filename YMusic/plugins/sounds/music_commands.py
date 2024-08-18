@@ -1,7 +1,7 @@
 from YMusic import app
 from YMusic.core import userbot
 from YMusic.utils.ytDetails import searchYt, extract_video_id, download_audio
-from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty, get_queue
+from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty, get_queue, MAX_QUEUE_SIZE
 from YMusic.utils.utils import delete_file
 from YMusic.utils.formaters import get_readable_time, format_time
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
@@ -38,6 +38,12 @@ async def _aPlay(_, message):
         
         if duration_minutes > config.MAX_DURATION_MINUTES:
             await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+            delete_file(audio_file)
+            return
+        
+        queue_length = get_queue_length(chat_id)
+        if queue_length >= MAX_QUEUE_SIZE:
+            await m.edit(f"Maaf, antrian sudah penuh (maksimal {MAX_QUEUE_SIZE} lagu). Tunggu sampai beberapa lagu selesai diputar.")
             delete_file(audio_file)
             return
 
