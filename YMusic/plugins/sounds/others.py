@@ -24,15 +24,11 @@ REMOVESUDO_COMMAND = ["REMOVESUDO"]
 def add_sudo(user_id: int):
     global SUDOERS
     SUDOERS.add(user_id)
-    LOGGER("YMusic").info(f"Added {user_id} to SUDO USERS")
 
 def remove_sudo(user_id: int):
     global SUDOERS
     if user_id in SUDOERS:
         SUDOERS.remove(user_id)
-        LOGGER("YMusic").info(f"Removed {user_id} from SUDO USERS")
-    else:
-        LOGGER("YMusic").warning(f"{user_id} is not in SUDO USERS")
 
 @app.on_message(filters.command(STOP_COMMAND, PREFIX))
 async def _stop(_, message):
