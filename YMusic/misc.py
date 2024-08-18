@@ -9,7 +9,6 @@ SUDOERS = filters.user()
 
 _boot_ = time.time()
 
-
 def sudo():
     global SUDOERS
     SUDOERS.add(config.OWNER_ID)

@@ -60,7 +60,8 @@ async def handler(client: PyTgCalls, update: Update):
             duration_str = format_time(current_song['duration'])
             await app.send_message(
                 chat_id,
-                f"🔁 Memutar ulang: [{current_song['title']}]({current_song['link']})\n"
+                f"🔁 Memutar ulang:\n\n"
+                f"Judul: [{current_song['title']}]({current_song['link']})\n"
                 f"Durasi: {duration_str}\n"
                 f"Sisa loop: {loop_count - 1}",
                 disable_web_page_preview=True
