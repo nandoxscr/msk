@@ -192,7 +192,7 @@ async def set_max_duration(client, message):
             await message.reply_text("Durasi harus lebih besar dari 0 menit.")
             return
         
-        global config.MAX_DURATION_MINUTES
+        global MAX_DURATION_MINUTES
         config.MAX_DURATION_MINUTES = new_duration
         await message.reply_text(f"MAX_DURATION_MINUTES berhasil diubah menjadi {new_duration} menit.")
     except ValueError:
