@@ -6,7 +6,8 @@ API_ID = int(getenv("API_ID"))
 API_HASH = getenv("API_HASH")
 SESSION_STRING = getenv("SESSION_STRING")
 OWNER_ID = int(getenv("OWNER_ID", 0))
-SUDO_USERS = list(map(int, getenv("SUDO_USERS", "").split(",")))
+sudo_users_str = getenv("SUDO_USERS", "")
+SUDO_USERS = [int(x) for x in sudo_users_str.split(',') if x.strip().isdigit()] if sudo_users_str else []
 COOK_PATH = getenv("COOK_PATH")
 MAX_DURATION_MINUTES = int(getenv("MAX_DURATION_MINUTES", 20))
 
