@@ -3,6 +3,7 @@ from YMusic.core import userbot
 from YMusic.utils.ytDetails import searchYt, extract_video_id, download_audio
 from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty, get_queue
 from YMusic.utils.utils import delete_file
+from YMusic.utils.formaters import get_readable_time
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 from YMusic.misc import SUDOERS
 
@@ -119,11 +120,7 @@ async def _playlist(_, message):
         playlist = "🎵 **Daftar Putar:**\n\n"
         for i, song in enumerate(queue, start=1):
             duration = song['duration']
-            if isinstance(duration, int):
-                minutes, seconds = divmod(duration, 60)
-                duration_str = f"{minutes:02d}:{seconds:02d}"
-            else:
-                duration_str = duration
+            duration_str = get_readable_time(duration)
 
             if i == 1:
                 playlist += f"{i}. ▶️ **{song['title']}** - {duration_str}\n"
