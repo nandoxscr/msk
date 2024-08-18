@@ -4,6 +4,7 @@ from pytgcalls.types import Update, MediaStream
 from YMusic import call, app
 from YMusic.utils.queue import QUEUE, get_queue, clear_queue, pop_an_item, is_queue_empty, get_current_song
 from YMusic.utils.loop import get_loop, set_loop
+from YMusic.utils.formaters import get_readable_time
 from YMusic.utils.utils import clear_downloads_cache
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 
@@ -60,10 +61,13 @@ async def handler(client: PyTgCalls, update: Update):
                         video_flags=MediaStream.Flags.IGNORE,
                     ),
                 )
+                duration_str = get_readable_time(next_song['duration'])
                 await start_play_time(chat_id)
                 await app.send_message(
                     chat_id,
-                    f"Memutar lagu berikutnya:\n\nJudul: {next_song['title']}\nDurasi: {next_song['duration']}\nLink: {next_song['link']}",
+                    f"🎵 Memutar lagu berikutnya:\n\n"
+                    f"Judul: [{next_song['title']}]({next_song['link']})\n"
+                    f"Durasi: {duration_str}",
                     disable_web_page_preview=True
                 )
             except Exception as e:

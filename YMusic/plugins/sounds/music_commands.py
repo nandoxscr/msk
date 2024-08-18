@@ -50,8 +50,9 @@ async def _aPlay(_, message):
                 finish_time = time.time()
                 await start_play_time(chat_id)
                 total_time_taken = str(int(finish_time - start_time)) + "s"
+                duration_str = get_readable_time(duration)
                 await m.edit(
-                    f"Sedang diputar\n\nJudul: [{title}]({link})\nDurasi: {duration}",
+                    f"🎵 Sedang diputar:\n\nJudul: [{title}]({link})\nDurasi: {duration_str}",
                     disable_web_page_preview=True,
                 )
         else:
@@ -117,15 +118,15 @@ async def _playlist(_, message):
         await message.reply_text("Daftar putar kosong.")
     else:
         queue = get_queue(chat_id)
-        playlist = "🎵 **Daftar Putar:**\n\n"
+        playlist = "🎵 <b>Daftar Putar:</b>\n\n"
         for i, song in enumerate(queue, start=1):
             duration = song['duration']
             duration_str = get_readable_time(duration)
 
             if i == 1:
-                playlist += f"{i}. ▶️ **{song['title']}** - {duration_str}\n"
+                playlist += f"{i}. ▶️ {song['title']} - {duration_str}\n"
             else:
-                playlist += f"{i}. **{song['title']}** - {duration_str}\n"
+                playlist += f"{i}. {song['title']} - {duration_str}\n"
             
             if i == 10:
                 break
