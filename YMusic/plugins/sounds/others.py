@@ -107,7 +107,7 @@ async def _loop(_, message):
             try:
                 await set_loop(message.chat.id, 5)
                 await message.reply_text(
-                    "Loop diaktifkan, lagu akan diputar 5x"
+                    "Loop diaktifkan, lagu saat ini akan diputar 5x"
                 )
             except Exception as e:
                 return await message.reply_text(f"Error:- <code>{e}</code>")
