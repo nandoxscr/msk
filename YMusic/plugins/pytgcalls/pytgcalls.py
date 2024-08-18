@@ -77,7 +77,7 @@ async def handler(client: PyTgCalls, update: Update):
             await stop_play_time(chat_id)
             await app.send_message(chat_id, "Semua lagu telah diputar. Meninggalkan obrolan suara dan membersihkan cache.")
         else:
-            next_song = get_queue(chat_id)[0]  # Ambil lagu berikutnya
+            next_song = get_queue(chat_id)[0]
             try:
                 print(f"Attempting to play next song: {next_song['title']} in chat {chat_id}")
                 await call.play(
@@ -93,7 +93,8 @@ async def handler(client: PyTgCalls, update: Update):
                     chat_id,
                     f"🎵 Memutar lagu berikutnya:\n\n"
                     f"Judul: [{next_song['title']}]({next_song['link']})\n"
-                    f"Durasi: {duration_str}",
+                    f"Durasi: {duration_str}\n"
+                    f"Direquest oleh: [${next_song['requester_name']}](tg://user?id={next_song['requester_id']})",
                     disable_web_page_preview=True
                 )
             except Exception as e:
