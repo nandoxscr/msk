@@ -26,25 +26,24 @@ async def _current(_, message):
         title = current_song['title']
         duration = current_song['duration']
         link = current_song['link']
+        total_duration = format_time(duration)
 
         if chat_id in PLAY_START_TIME:
             elapsed_time = int(time.time() - PLAY_START_TIME[chat_id])
             current_time = format_time(elapsed_time)
-            total_duration = format_time(duration)
 
             await message.reply_text(
                 f"🎵 Sedang diputar:\n\n"
-                f"Judul: {title}\n"
-                f"Durasi: {current_time} / {total_duration}\n"
-                f"Link: {link}",
+                f"Judul: [{title}]({link})\n"
+                f"Durasi: {current_time} / {total_duration}\n",
                 disable_web_page_preview=True
             )
         else:
+
             await message.reply_text(
                 f"🎵 Sedang diputar:\n\n"
-                f"Judul: {title}\n"
-                f"Durasi: {duration}\n"
-                f"Link: {link}",
+                f"Judul: [{title}]({link})\n"
+                f"Durasi: {total_duration}",
                 disable_web_page_preview=True
             )
 
