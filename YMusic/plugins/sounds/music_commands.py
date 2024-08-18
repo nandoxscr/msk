@@ -61,11 +61,11 @@ async def _aPlay(_, message):
                 duration_str = format_time(duration)
                 await m.edit(
                     f"🎵 Sedang diputar:\n\nJudul: [{title}]({link})\nDurasi: {duration_str}\n"
-                    f"Direquest oleh: [${requester_name}](tg://user?id={requester_id})",
+                    f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})",
                     disable_web_page_preview=True,
                 )
         elif queue_num:
-            await m.edit(f"#{queue_num} - {title}\n\nDitambahkan di daftar putar oleh [${requester_name}](tg://user?id={requester_id}).")
+            await m.edit(f"#{queue_num} - {title}\n\nDitambahkan di daftar putar oleh [{requester_name}](tg://user?id={requester_id}).")
         else:
             await m.edit(f"Gagal menambahkan lagu ke antrian. Antrian mungkin sudah penuh.")
 
@@ -136,10 +136,10 @@ async def _playlist(_, message):
 
             if i == 1:
                 playlist += f"{i}. ▶️ {song['title']} - {duration_str}\n"
-                playlist += f"   Direquest oleh: [${song['requester_name']}](tg://user?id={song['requester_id']})\n\n"
+                playlist += f"   Direquest oleh: [{song['requester_name']}](tg://user?id={song['requester_id']})\n\n"
             else:
                 playlist += f"{i}. {song['title']} - {duration_str}\n"
-                playlist += f"   Direquest oleh: [${song['requester_name']}](tg://user?id={song['requester_id']})\n\n"
+                playlist += f"   Direquest oleh: [{song['requester_name']}](tg://user?id={song['requester_id']})\n\n"
             
             if i == MAX_QUEUE_SIZE:
                 break

@@ -33,7 +33,7 @@ async def _skip(chat_id):
                 video_flags=MediaStream.Flags.IGNORE,
             ),
         )
-        return [next_song['title'], next_song['duration'], next_song['link'], time.time()]
+        return [next_song['title'], next_song['duration'], next_song['link'], next_song['requester_name'], next_song['requester_id'], time.time()]
     except Exception as e:
         print(f"Error in _skip for chat {chat_id}: {e}")
         return None
@@ -94,7 +94,7 @@ async def handler(client: PyTgCalls, update: Update):
                     f"🎵 Memutar lagu berikutnya:\n\n"
                     f"Judul: [{next_song['title']}]({next_song['link']})\n"
                     f"Durasi: {duration_str}\n"
-                    f"Direquest oleh: [${next_song['requester_name']}](tg://user?id={next_song['requester_id']})",
+                    f"Direquest oleh: [{next_song['requester_name']}](tg://user?id={next_song['requester_id']})",
                     disable_web_page_preview=True
                 )
             except Exception as e:

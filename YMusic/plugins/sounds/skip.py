@@ -40,13 +40,14 @@ async def _aSkip(_, message):
                 await stop(chat_id)
                 clear_downloads_cache()
             elif isinstance(result, list):
-                title, duration, link, _ = result
+                title, duration, link, reqname, reqid, _ = result
                 await start_play_time(chat_id)
                 duration_str = format_time(duration)
                 await m.edit(
                     f"Berhasil melewati lagu. Sedang diputar:\n\n"
                     f"Judul: [{title}]({link})\n"
-                    f"Durasi: {duration_str}\n",
+                    f"Durasi: {duration_str}\n"
+                    f"Direquest oleh: [{reqname}](tg://user?id={reqid})",
                     disable_web_page_preview=True
                 )
             else:
