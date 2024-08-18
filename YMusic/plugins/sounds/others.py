@@ -16,10 +16,11 @@ RPREFIX = config.RPREFIX
 STOP_COMMAND = ["STOP"]
 PAUSE_COMMAND = ["PAUSE"]
 RESUME_COMMAND = ["RESUME"]
-LOOP_COMMAND = ["LOOP"]
-LOOPEND_COMMAND = ["ENDLOOP"]
+LOOP_COMMAND = ["LOOP", "L"]
+LOOPEND_COMMAND = ["ENDLOOP", "EL"]
 ADDSUDO_COMMAND = ["ADDSUDO"]
 REMOVESUDO_COMMAND = ["REMOVESUDO"]
+SETMAXDURATION_COMMAND = ["SETMAXDURATION", "SMD"]
 
 def add_sudo(user_id: int):
     global SUDOERS
@@ -106,13 +107,13 @@ async def _loop(_, message):
             try:
                 await set_loop(message.chat.id, 5)
                 await message.reply_text(
-                    "Loop enabled. Now current song will be played 5 times"
+                    "Loop diaktifkan, lagu akan diputar 5x"
                 )
             except Exception as e:
                 return await message.reply_text(f"Error:- <code>{e}</code>")
 
         else:
-            await message.reply_text("Loop already enabled")
+            await message.reply_text("Loop sudah diaktifkan")
     else:
         return await message.reply_text(
             "Hanya Admin Saja"
@@ -131,11 +132,11 @@ async def _endLoop(_, message):
     ]:
         loop = await get_loop(message.chat.id)
         if loop == 0:
-            await message.reply_text("Lopp is not enabled")
+            await message.reply_text("Loop tidak diaktifkan")
         else:
             try:
                 await set_loop(message.chat.id, 0)
-                await message.reply_text("Loop Disabled")
+                await message.reply_text("Loop dimatikan")
             except Exception as e:
                 return await message.reply_text(f"Error:- <code>{e}</code>")
     else:
@@ -180,7 +181,7 @@ async def _sudo_list(client, message):
     sudo_list = ", ".join(str(sudo_id) for sudo_id in SUDOERS)
     await message.reply_text(f"Daftar SUDO Users:\n{sudo_list}")
     
-@app.on_message(filters.command(["SETMAXDURATION"], PREFIX) & filters.user(config.OWNER_ID))
+@app.on_message(filters.command(SETMAXDURATION_COMMAND, PREFIX) & filters.user(config.OWNER_ID))
 async def set_max_duration(client, message):
     if len(message.command) != 2:
         await message.reply_text("Penggunaan: .setmaxduration [durasi dalam menit]")
