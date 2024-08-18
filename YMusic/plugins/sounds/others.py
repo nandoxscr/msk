@@ -44,17 +44,6 @@ async def _stop(_, message):
             "Hanya Admin Saja"
         )
 
-
-@app.on_message(filters.command(STOP_COMMAND, RPREFIX))
-async def _stop(_, message):
-    if (len(message.command)) != 2:
-        await message.reply_text("You forgot to pass an argument")
-    else:
-        msg_id = message.text.split(" ", 1)[1]
-        Text = await userbot.stop(msg_id)
-        await message.reply_text(Text)
-
-
 @app.on_message(filters.command(PAUSE_COMMAND, PREFIX))
 async def _pause(_, message):
     # Get administrators
@@ -72,16 +61,6 @@ async def _pause(_, message):
         return await message.reply_text(
             "Hanya Admin Saja"
         )
-
-
-@app.on_message(filters.command(PAUSE_COMMAND, RPREFIX))
-async def _pause(_, message):
-    if (len(message.command)) != 2:
-        await message.reply_text("You forgot to pass an argument")
-    else:
-        msg_id = message.text.split(" ", 1)[1]
-        Text = await userbot.pause(msg_id)
-        await message.reply_text(Text)
 
 
 @app.on_message(filters.command(RESUME_COMMAND, PREFIX))
@@ -102,15 +81,6 @@ async def _resume(_, message):
             "Hanya Admin Saja"
         )
 
-
-@app.on_message(filters.command(RESUME_COMMAND, RPREFIX))
-async def _resume(_, message):
-    if (len(message.command)) != 2:
-        await message.reply_text("You forgot to pass an argument")
-    else:
-        msg_id = message.text.split(" ", 1)[1]
-        Text = await userbot.resume(msg_id)
-        await message.reply_text(Text)
 
 @app.on_message(filters.command(LOOP_COMMAND, PREFIX))
 async def _loop(_, message):

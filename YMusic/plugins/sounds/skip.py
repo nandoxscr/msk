@@ -5,7 +5,7 @@ from YMusic.misc import SUDOERS
 from YMusic.plugins.pytgcalls.pytgcalls import _skip, stop
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 from YMusic.utils.utils import clear_downloads_cache
-from YMusic.utils.formaters import get_readable_time
+from YMusic.utils.formaters import get_readable_time, format_time
 
 from pytgcalls.types import MediaStream
 from pyrogram import filters
@@ -42,7 +42,7 @@ async def _aSkip(_, message):
             elif isinstance(result, list):
                 title, duration, link, _ = result
                 await start_play_time(chat_id)
-                duration_str = get_readable_time(duration)
+                duration_str = format_time(duration)
                 await m.edit(
                     f"Berhasil melewati lagu. Sedang diputar:\n\n"
                     f"Judul: [{title}]({link})\n"

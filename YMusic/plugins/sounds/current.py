@@ -1,6 +1,7 @@
 from YMusic import app
 from YMusic.misc import SUDOERS
 from YMusic.utils.queue import get_queue
+from YMusic.utils.formaters import get_readable_time, format_time
 from pyrogram import filters
 import time
 import config
@@ -10,11 +11,6 @@ PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
 
 PLAY_START_TIME = {}
-
-
-def format_time(seconds):
-    minutes, seconds = divmod(int(seconds), 60)
-    return f"{minutes:02d}:{seconds:02d}"
 
 @app.on_message((filters.command(CURRENT_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _current(_, message):

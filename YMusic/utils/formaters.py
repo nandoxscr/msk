@@ -1,3 +1,10 @@
+
+
+def format_time(seconds):
+    minutes, seconds = divmod(int(seconds), 60)
+    return f"{minutes:02d}:{seconds:02d}"
+
+
 def get_readable_time(seconds: int) -> str:
     count = 0
     ping_time = ""

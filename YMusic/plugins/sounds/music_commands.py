@@ -3,7 +3,7 @@ from YMusic.core import userbot
 from YMusic.utils.ytDetails import searchYt, extract_video_id, download_audio
 from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty, get_queue
 from YMusic.utils.utils import delete_file
-from YMusic.utils.formaters import get_readable_time
+from YMusic.utils.formaters import get_readable_time, format_time
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 from YMusic.misc import SUDOERS
 
@@ -50,7 +50,7 @@ async def _aPlay(_, message):
                 finish_time = time.time()
                 await start_play_time(chat_id)
                 total_time_taken = str(int(finish_time - start_time)) + "s"
-                duration_str = get_readable_time(duration)
+                duration_str = format_time(duration)
                 await m.edit(
                     f"🎵 Sedang diputar:\n\nJudul: [{title}]({link})\nDurasi: {duration_str}",
                     disable_web_page_preview=True,
@@ -107,7 +107,7 @@ async def _aPlay(_, message):
     except asyncio.CancelledError:
         await message.reply_text("Proses dibatalkan.")
     except Exception as e:
-        await message.reply_text(f"Error:- <code>{e}</code>")
+        await message.reply_text(f"<code>Error: {e}</code>")
     finally:
         ONGOING_PROCESSES[chat_id] = None        
 
@@ -121,7 +121,7 @@ async def _playlist(_, message):
         playlist = "🎵 <b>Daftar Putar:</b>\n\n"
         for i, song in enumerate(queue, start=1):
             duration = song['duration']
-            duration_str = get_readable_time(duration)
+            duration_str = format_time(duration)
 
             if i == 1:
                 playlist += f"{i}. ▶️ {song['title']} - {duration_str}\n"
