@@ -6,8 +6,10 @@ API_ID = int(getenv("API_ID"))
 API_HASH = getenv("API_HASH")
 SESSION_STRING = getenv("SESSION_STRING")
 OWNER_ID = int(getenv("OWNER_ID", 0))
+SUDO_USERS = list(map(int, os.getenv("SUDO_USERS", "").split(",")))
 COOK_PATH = getenv("COOK_PATH")
 MAX_DURATION_MINUTES = int(getenv("MAX_DURATION_MINUTES", 20))
+
 PREFIX = "."
 RPREFIX = "$"
 

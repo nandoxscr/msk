@@ -11,7 +11,6 @@ from YMusic.misc import SUDOERS
 import config
 
 PREFIX = config.PREFIX
-
 RPREFIX = config.RPREFIX
 
 STOP_COMMAND = ["STOP"]
@@ -19,7 +18,21 @@ PAUSE_COMMAND = ["PAUSE"]
 RESUME_COMMAND = ["RESUME"]
 LOOP_COMMAND = ["LOOP"]
 LOOPEND_COMMAND = ["ENDLOOP"]
+ADDSUDO_COMMAND = ["ADDSUDO"]
+REMOVESUDO_COMMAND = ["REMOVESUDO"]
 
+def add_sudo(user_id: int):
+    global SUDOERS
+    SUDOERS.add(user_id)
+    LOGGER("YMusic").info(f"Added {user_id} to SUDO USERS")
+
+def remove_sudo(user_id: int):
+    global SUDOERS
+    if user_id in SUDOERS:
+        SUDOERS.remove(user_id)
+        LOGGER("YMusic").info(f"Removed {user_id} from SUDO USERS")
+    else:
+        LOGGER("YMusic").warning(f"{user_id} is not in SUDO USERS")
 
 @app.on_message(filters.command(STOP_COMMAND, PREFIX))
 async def _stop(_, message):
@@ -133,3 +146,40 @@ async def _endLoop(_, message):
         return await message.reply_text(
             "Hanya Admin Saja"
         )
+
+@app.on_message(filters.command(ADDSUDO_COMMAND, PREFIX) & filters.user(config.OWNER_ID))
+async def _add_sudo(client, message):
+    if len(message.command) != 2:
+        await message.reply_text("Penggunaan: .addsudo [user_id]")
+        return
+    
+    try:
+        user_id = int(message.command[1])
+        if user_id in SUDOERS:
+            await message.reply_text(f"User ID {user_id} sudah ada dalam daftar SUDO.")
+        else:
+            add_sudo(user_id)
+            await message.reply_text(f"User ID {user_id} berhasil ditambahkan ke daftar SUDO.")
+    except ValueError:
+        await message.reply_text("User ID harus berupa angka.")
+
+@app.on_message(filters.command(REMOVESUDO_COMMAND, PREFIX) & filters.user(config.OWNER_ID))
+async def _remove_sudo(client, message):
+    if len(message.command) != 2:
+        await message.reply_text("Penggunaan: .removesudo [user_id]")
+        return
+    
+    try:
+        user_id = int(message.command[1])
+        if user_id not in SUDOERS:
+            await message.reply_text(f"User ID {user_id} tidak ada dalam daftar SUDO.")
+        else:
+            remove_sudo(user_id)
+            await message.reply_text(f"User ID {user_id} berhasil dihapus dari daftar SUDO.")
+    except ValueError:
+        await message.reply_text("User ID harus berupa angka.")
+
+@app.on_message(filters.command(["SUDOLIST"], PREFIX) & filters.user(config.OWNER_ID))
+async def _sudo_list(client, message):
+    sudo_list = ", ".join(str(sudo_id) for sudo_id in SUDOERS)
+    await message.reply_text(f"Daftar SUDO Users:\n{sudo_list}")
