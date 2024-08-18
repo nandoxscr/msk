@@ -179,3 +179,22 @@ async def _remove_sudo(client, message):
 async def _sudo_list(client, message):
     sudo_list = ", ".join(str(sudo_id) for sudo_id in SUDOERS)
     await message.reply_text(f"Daftar SUDO Users:\n{sudo_list}")
+    
+@app.on_message(filters.command(["SETMAXDURATION"], PREFIX) & filters.user(config.OWNER_ID))
+async def set_max_duration(client, message):
+    if len(message.command) != 2:
+        await message.reply_text("Penggunaan: .setmaxduration [durasi dalam menit]")
+        return
+    
+    try:
+        new_duration = int(message.command[1])
+        if new_duration <= 0:
+            await message.reply_text("Durasi harus lebih besar dari 0 menit.")
+            return
+        
+        global config.MAX_DURATION_MINUTES
+        config.MAX_DURATION_MINUTES = new_duration
+        await message.reply_text(f"MAX_DURATION_MINUTES berhasil diubah menjadi {new_duration} menit.")
+    except ValueError:
+        await message.reply_text("Durasi harus berupa angka dalam menit.")
+
