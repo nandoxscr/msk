@@ -1,4 +1,4 @@
-from YMusic import app
+from YMusic import call, app
 from YMusic.utils.queue import QUEUE, pop_an_item, get_queue, clear_queue, is_queue_empty, get_current_song
 from YMusic.utils.loop import get_loop
 from YMusic.misc import SUDOERS
