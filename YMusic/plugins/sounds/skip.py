@@ -2,7 +2,7 @@ from YMusic import app
 from YMusic.utils.queue import QUEUE, pop_an_item, get_queue, clear_queue, is_queue_empty
 from YMusic.utils.loop import get_loop
 from YMusic.misc import SUDOERS
-from YMusic.plugins.pytgcalls.pytgcalls import _skip, stop
+from YMusic.plugins.pytgcalls.pytgcalls import _skip, stop, send_song_info
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 from YMusic.utils.utils import clear_downloads_cache
 from YMusic.utils.formaters import get_readable_time, format_time
@@ -36,27 +36,28 @@ async def _aSkip(_, message):
         m = await message.reply_text("Mencoba melewati lagu saat ini...")
         await stop_play_time(chat_id)
         try:
-            result = await _skip(chat_id)
-            if result == 1:
+            popped_item = pop_an_item(chat_id)
+            if not popped_item:
                 await m.edit("Tidak ada lagu berikutnya. Meninggalkan obrolan suara...")
                 await stop(chat_id)
                 clear_downloads_cache()
-            elif isinstance(result, list):
-                title, duration, link, reqname, reqid, _ = result
-                await start_play_time(chat_id)
-                duration_str = format_time(duration)
-                await m.edit(
-                    f"Berhasil melewati lagu. Sedang diputar:\n\n"
-                    f"Judul: [{title}]({link})\n"
-                    f"Durasi: {duration_str}\n"
-                    f"Direquest oleh: [{reqname}](tg://user?id={reqid})",
-                    disable_web_page_preview=True
-                )
             else:
-                await m.edit("Tidak ada lagu berikutnya. Meninggalkan obrolan suara...")
-                await stop(chat_id)
-                clear_downloads_cache()
-
+                next_song = get_current_song(chat_id)
+                if next_song:
+                    await call.play(
+                        chat_id,
+                        MediaStream(
+                            next_song['audio_file'],
+                            video_flags=MediaStream.Flags.IGNORE,
+                        ),
+                    )
+                    await start_play_time(chat_id)
+                    await m.delete()
+                    await send_song_info(chat_id, next_song)
+                else:
+                    await m.edit("Tidak ada lagu berikutnya. Meninggalkan obrolan suara...")
+                    await stop(chat_id)
+                    clear_downloads_cache()
         except Exception as e:
             logger.error(f"Error in _aSkip for chat {chat_id}: {e}")
             await m.edit(f"Terjadi kesalahan: {str(e)}")
