@@ -13,7 +13,12 @@ from collections import defaultdict
 import asyncio
 import time
 import config
+import aiohttp
+import json
+from urllib.parse import quote
+import textwrap
 
+MAX_MESSAGE_LENGTH = 4096
 
 PLAY_COMMAND = ["P", "PLAY"]
 PLAYLIST_COMMAND = ["PLAYLIST", "PL"]
@@ -59,11 +64,38 @@ async def _aPlay(_, message):
                 await start_play_time(chat_id)
                 total_time_taken = str(int(finish_time - start_time)) + "s"
                 duration_str = format_time(duration)
-                await m.edit(
-                    f"🎵 Sedang diputar:\n\nJudul: [{title}]({link})\nDurasi: {duration_str}\n"
-                    f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})",
-                    disable_web_page_preview=True,
-                )
+    
+                # Ambil data lirik menggunakan query asli
+                lyrics_data = await get_lyrics(query)
+                
+                # Persiapkan pesan
+                message_text = f"🎵 Sedang diputar:\n\n"
+                
+                if lyrics_data:
+                    message_text += f"Judul: [{lyrics_data['title']}]({link})\n"
+                    message_text += f"Artis: {lyrics_data['artist']}\n"
+                    message_text += f"Durasi: {duration_str}\n"
+                    message_text += f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n\n"
+                    
+                    # Tambahkan lirik
+                    lyrics = lyrics_data['lyrics']
+                    message_text += f"📜 Lirik:\n{lyrics}"
+                else:
+                    message_text += f"Judul: [{title}]({link})\n"
+                    message_text += f"Durasi: {duration_str}\n"
+                    message_text += f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n\n"
+                    message_text += "Lirik tidak ditemukan."
+    
+                # Bagi pesan jika melebihi batas maksimal
+                if len(message_text) > MAX_MESSAGE_LENGTH:
+                    parts = textwrap.wrap(message_text, MAX_MESSAGE_LENGTH, replace_whitespace=False)
+                    for i, part in enumerate(parts):
+                        if i == 0:
+                            await m.edit(part, disable_web_page_preview=True)
+                        else:
+                            await message.reply_text(part, disable_web_page_preview=True)
+                else:
+                    await m.edit(message_text, disable_web_page_preview=True)
         elif queue_num:
             await m.edit(f"#{queue_num} - {title}\n\nDitambahkan di daftar putar oleh [{requester_name}](tg://user?id={requester_id}).")
         else:
@@ -166,3 +198,18 @@ async def _cancel(_, message):
         await message.reply_text("Tidak dapat membatalkan proses saat ini.")
     
     ONGOING_PROCESSES[chat_id] = None
+
+
+async def get_lyrics(query):
+    encoded_query = quote(query)
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(f"https://api.safone.dev/lyrics?title={encoded_query}") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    return data
+                else:
+                    return None
+        except Exception as e:
+            print(f"Error fetching lyrics: {e}")
+            return None
