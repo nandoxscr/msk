@@ -105,7 +105,7 @@ async def handler(client: PyTgCalls, update: Update):
         clear_downloads_cache()
 
 async def send_song_info(chat_id, song, is_loop=False):
-    query = song['query']
+    query = song.get('query', song['title'])  # Gunakan judul sebagai fallback jika query tidak ada
     title = song['title']
     duration = song['duration']
     link = song['link']
@@ -136,7 +136,6 @@ async def send_song_info(chat_id, song, is_loop=False):
             await app.send_message(chat_id, part, disable_web_page_preview=True)
     else:
         await app.send_message(chat_id, message_text, disable_web_page_preview=True)
-        
 
 async def stop(chat_id):
     try:

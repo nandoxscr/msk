@@ -40,7 +40,7 @@ async def _aPlay(_, message):
 
     ONGOING_PROCESSES[chat_id] = asyncio.current_task()
 
-    async def process_audio(title, duration, audio_file, link):
+    async def process_audio(title, duration, audio_file, link, query):
         duration_minutes = duration / 60 if isinstance(duration, (int, float)) else 0
         
         if duration_minutes > config.MAX_DURATION_MINUTES:
@@ -54,7 +54,7 @@ async def _aPlay(_, message):
             await delete_file(audio_file)
             return
 
-        queue_num = add_to_queue(chat_id, title, duration, audio_file, link, requester_name, requester_id)
+        queue_num = add_to_queue(chat_id, title, duration, audio_file, link, requester_name, requester_id, query)
         if queue_num == 1:
             Status, Text = await userbot.playAudio(chat_id, audio_file)
             if not Status:
@@ -114,7 +114,7 @@ async def _aPlay(_, message):
                 await delete_file(audio_file) 
                 return
             
-            await process_audio(title, duration, audio_file, link)
+            await process_audio(title, duration, audio_file, link, title)
         
         elif len(message.command) < 2:
             await message.reply_text("Mau lagu apa tuan? 🙏")
@@ -145,7 +145,7 @@ async def _aPlay(_, message):
                 await delete_file(audio_file)
                 return
             
-            await process_audio(downloaded_title, audio_duration, audio_file, link)
+            await process_audio(downloaded_title, audio_duration, audio_file, link, query)
 
     except asyncio.CancelledError:
         await message.reply_text("Proses dibatalkan.")
