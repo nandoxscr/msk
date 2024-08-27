@@ -9,7 +9,10 @@ from YMusic.utils.utils import clear_downloads_cache
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 
 import time
+import asyncio
+import logging
 
+logger = logging.getLogger(__name__)
 
 async def _skip(chat_id):
     if is_queue_empty(chat_id):
@@ -42,11 +45,11 @@ async def _skip(chat_id):
 async def handler(client: PyTgCalls, update: Update):
     chat_id = update.chat_id
     try:
-        print(f"Stream ended for chat {chat_id}")
-        
+        logger.info(f"Stream ended for chat {chat_id}")
+
         loop_count = await get_loop(chat_id)
         current_song = get_current_song(chat_id)
-        
+
         if loop_count > 0 and current_song:
             await set_loop(chat_id, loop_count - 1)
             
@@ -69,42 +72,49 @@ async def handler(client: PyTgCalls, update: Update):
             await start_play_time(chat_id)
             return
 
-        pop_an_item(chat_id)
-        if is_queue_empty(chat_id):
-            print(f"Queue is empty for chat {chat_id}")
+        popped_item = pop_an_item(chat_id)
+        if not popped_item:
+            logger.info(f"Queue is empty for chat {chat_id}")
             await stop(chat_id)
             clear_downloads_cache()
             await stop_play_time(chat_id)
             await app.send_message(chat_id, "Semua lagu telah diputar. Meninggalkan obrolan suara dan membersihkan cache.")
         else:
-            next_song = get_queue(chat_id)[0]
-            try:
-                print(f"Attempting to play next song: {next_song['title']} in chat {chat_id}")
-                await call.play(
-                    chat_id,
-                    MediaStream(
-                        next_song['audio_file'],
-                        video_flags=MediaStream.Flags.IGNORE,
-                    ),
-                )
-                duration_str = format_time(next_song['duration'])
-                await start_play_time(chat_id)
-                await app.send_message(
-                    chat_id,
-                    f"🎵 Memutar lagu berikutnya:\n\n"
-                    f"Judul: [{next_song['title']}]({next_song['link']})\n"
-                    f"Durasi: {duration_str}\n"
-                    f"Direquest oleh: [{next_song['requester_name']}](tg://user?id={next_song['requester_id']})",
-                    disable_web_page_preview=True
-                )
-            except Exception as e:
-                print(f"Error playing next song in chat {chat_id}: {e}")
-                await app.send_message(chat_id, "Terjadi kesalahan saat mencoba memutar lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
+            next_song = get_current_song(chat_id)
+            if next_song:
+                try:
+                    logger.info(f"Attempting to play next song: {next_song['title']} in chat {chat_id}")
+                    await call.play(
+                        chat_id,
+                        MediaStream(
+                            next_song['audio_file'],
+                            video_flags=MediaStream.Flags.IGNORE,
+                        ),
+                    )
+                    duration_str = format_time(next_song['duration'])
+                    await start_play_time(chat_id)
+                    await app.send_message(
+                        chat_id,
+                        f"🎵 Memutar lagu berikutnya:\n\n"
+                        f"Judul: [{next_song['title']}]({next_song['link']})\n"
+                        f"Durasi: {duration_str}\n"
+                        f"Direquest oleh: [{next_song['requester_name']}](tg://user?id={next_song['requester_id']})",
+                        disable_web_page_preview=True
+                    )
+                except Exception as e:
+                    logger.error(f"Error playing next song in chat {chat_id}: {e}")
+                    await app.send_message(chat_id, "Terjadi kesalahan saat mencoba memutar lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
+                    await stop(chat_id)
+                    await stop_play_time(chat_id)
+                    clear_downloads_cache()
+            else:
+                logger.warning(f"No next song found for chat {chat_id} after popping an item")
                 await stop(chat_id)
                 await stop_play_time(chat_id)
                 clear_downloads_cache()
+                await app.send_message(chat_id, "Tidak ada lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
     except Exception as e:
-        print(f"Error in stream_end handler for chat {chat_id}: {e}")
+        logger.error(f"Error in stream_end handler for chat {chat_id}: {e}")
         await app.send_message(chat_id, f"Terjadi kesalahan: {str(e)}. Meninggalkan obrolan suara dan membersihkan cache.")
         await stop(chat_id)
         await stop_play_time(chat_id)
@@ -113,9 +123,9 @@ async def handler(client: PyTgCalls, update: Update):
 async def stop(chat_id):
     try:
         if chat_id in QUEUE:
-            QUEUE.pop(chat_id)
+            clear_queue(chat_id)
         await call.leave_call(chat_id)
     except Exception as e:
-        print(f"Error in stop: {e}")
+        logger.error(f"Error in stop: {e}")
     finally:
         clear_downloads_cache()

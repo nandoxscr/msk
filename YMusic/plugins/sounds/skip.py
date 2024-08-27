@@ -19,6 +19,8 @@ SKIP_COMMAND = ["SKIP"]
 PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
 
+logger = logging.getLogger(__name__)
+
 @app.on_message((filters.command(SKIP_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _aSkip(_, message):
     chat_id = message.chat.id
@@ -54,8 +56,10 @@ async def _aSkip(_, message):
                 await m.edit("Tidak ada lagu berikutnya. Meninggalkan obrolan suara...")
                 await stop(chat_id)
                 clear_downloads_cache()
-        
+
         except Exception as e:
+            logger.error(f"Error in _aSkip for chat {chat_id}: {e}")
             await m.edit(f"Terjadi kesalahan: {str(e)}")
     else:
         await message.reply_text("Maaf, hanya admin dan user yang diizinkan yang dapat melewati lagu.")
+        
