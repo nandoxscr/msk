@@ -7,6 +7,7 @@ from YMusic.utils.loop import get_loop, set_loop
 from YMusic.utils.formaters import get_readable_time, format_time
 from YMusic.utils.utils import clear_downloads_cache
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
+from YMusic.plugins.sounds.music_commands import MAX_MESSAGE_LENGTH, get_lyrics
 
 import time
 import asyncio
@@ -60,16 +61,7 @@ async def handler(client: PyTgCalls, update: Update):
                     video_flags=MediaStream.Flags.IGNORE,
                 ),
             )
-            duration_str = format_time(current_song['duration'])
-            await app.send_message(
-                chat_id,
-                f"🔁 Memutar ulang:\n\n"
-                f"Judul: [{current_song['title']}]({current_song['link']})\n"
-                f"Durasi: {duration_str}\n"
-                f"Sisa loop: {loop_count - 1}",
-                disable_web_page_preview=True
-            )
-            await start_play_time(chat_id)
+            await send_song_info(chat_id, current_song, is_loop=True)
             return
 
         popped_item = pop_an_item(chat_id)
@@ -91,16 +83,8 @@ async def handler(client: PyTgCalls, update: Update):
                             video_flags=MediaStream.Flags.IGNORE,
                         ),
                     )
-                    duration_str = format_time(next_song['duration'])
                     await start_play_time(chat_id)
-                    await app.send_message(
-                        chat_id,
-                        f"🎵 Memutar lagu berikutnya:\n\n"
-                        f"Judul: [{next_song['title']}]({next_song['link']})\n"
-                        f"Durasi: {duration_str}\n"
-                        f"Direquest oleh: [{next_song['requester_name']}](tg://user?id={next_song['requester_id']})",
-                        disable_web_page_preview=True
-                    )
+                    await send_song_info(chat_id, next_song)
                 except Exception as e:
                     logger.error(f"Error playing next song in chat {chat_id}: {e}")
                     await app.send_message(chat_id, "Terjadi kesalahan saat mencoba memutar lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
@@ -119,6 +103,40 @@ async def handler(client: PyTgCalls, update: Update):
         await stop(chat_id)
         await stop_play_time(chat_id)
         clear_downloads_cache()
+
+async def send_song_info(chat_id, song, is_loop=False):
+    query = song['query']
+    title = song['title']
+    duration = song['duration']
+    link = song['link']
+    requester_name = song['requester_name']
+    requester_id = song['requester_id']
+
+    lyrics_data = await get_lyrics(query)
+    
+    message_text = f"🎵 {'Memutar ulang' if is_loop else 'Sedang diputar'}:\n\n"
+    
+    if lyrics_data:
+        message_text += f"Judul: [{lyrics_data['title']}]({link})\n"
+        message_text += f"Artis: {lyrics_data['artist']}\n"
+        message_text += f"Durasi: {format_time(duration)}\n"
+        message_text += f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n\n"
+        
+        lyrics = lyrics_data['lyrics']
+        message_text += f"📜 Lirik:\n{lyrics}"
+    else:
+        message_text += f"Judul: [{title}]({link})\n"
+        message_text += f"Durasi: {format_time(duration)}\n"
+        message_text += f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n\n"
+        message_text += "Lirik tidak ditemukan."
+
+    if len(message_text) > MAX_MESSAGE_LENGTH:
+        parts = textwrap.wrap(message_text, MAX_MESSAGE_LENGTH, replace_whitespace=False)
+        for part in parts:
+            await app.send_message(chat_id, part, disable_web_page_preview=True)
+    else:
+        await app.send_message(chat_id, message_text, disable_web_page_preview=True)
+        
 
 async def stop(chat_id):
     try:
