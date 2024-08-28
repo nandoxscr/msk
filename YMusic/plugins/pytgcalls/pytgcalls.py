@@ -12,6 +12,7 @@ from YMusic.plugins.sounds.music_commands import MAX_MESSAGE_LENGTH, get_lyrics
 import time
 import asyncio
 import logging
+import textwrap
 
 logger = logging.getLogger(__name__)
 
