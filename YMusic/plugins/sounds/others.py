@@ -7,7 +7,8 @@ from YMusic.utils.loop import get_loop, set_loop
 from YMusic.utils.utils import clear_downloads_cache
 from YMusic.core import userbot
 from YMusic.misc import SUDOERS
-
+import aiohttp
+import json
 import config
 
 PREFIX = config.PREFIX
@@ -21,6 +22,7 @@ LOOPEND_COMMAND = ["ENDLOOP", "EL"]
 ADDSUDO_COMMAND = ["ADDSUDO"]
 REMOVESUDO_COMMAND = ["REMOVESUDO"]
 SETMAXDURATION_COMMAND = ["SETMAXDURATION", "SMD"]
+NANDO_COMMAND = ["NANDO"]
 
 def add_sudo(user_id: int):
     global SUDOERS
@@ -198,4 +200,30 @@ async def set_max_duration(client, message):
         await message.reply_text(f"MAX_DURATION_MINUTES berhasil diubah menjadi {new_duration} menit.")
     except ValueError:
         await message.reply_text("Durasi harus berupa angka dalam menit.")
+
+@app.on_message(filters.command(NANDO_COMMAND, PREFIX))
+async def _nando(_, message):
+    if len(message.command) < 2:
+        await message.reply_text("Penggunaan: .nando [query]")
+        return
+
+    query = " ".join(message.command[1:])
+    api_url = f"https://api.safone.dev/bard?message={query}"
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(api_url) as response:
+            if response.status == 200:
+                data = await response.json()
+                result = data.get('message', 'No message received from API')
+                
+                # Check if the result is too long
+                if len(result) > 4096:
+                    # Split the message into chunks of 4096 characters
+                    chunks = [result[i:i+4096] for i in range(0, len(result), 4096)]
+                    for chunk in chunks:
+                        await message.reply_text(chunk)
+                else:
+                    await message.reply_text(result)
+            else:
+                await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status}")
 

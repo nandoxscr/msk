@@ -6,3 +6,4 @@ youtube-search-python
 python-dotenv
 speedtest-cli
 ffprobe
+aiohttp
