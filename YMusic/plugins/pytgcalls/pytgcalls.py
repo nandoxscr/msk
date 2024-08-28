@@ -5,9 +5,8 @@ from YMusic import call, app
 from YMusic.utils.queue import QUEUE, get_queue, clear_queue, pop_an_item, is_queue_empty, get_current_song
 from YMusic.utils.loop import get_loop, set_loop
 from YMusic.utils.formaters import get_readable_time, format_time
-from YMusic.utils.utils import clear_downloads_cache, extract_song_title
+from YMusic.utils.utils import clear_downloads_cache, extract_song_title, send_song_info, MAX_MESSAGE_LENGTH, get_lyrics
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
-from YMusic.plugins.sounds.music_commands import MAX_MESSAGE_LENGTH, get_lyrics
 
 import time
 import asyncio
@@ -104,43 +103,6 @@ async def handler(client: PyTgCalls, update: Update):
         await stop(chat_id)
         await stop_play_time(chat_id)
         clear_downloads_cache()
-
-async def send_song_info(chat_id, song, is_loop=False):
-    original_query = song.get('query', song['title'])
-    processed_query = extract_song_title(original_query)
-    title = song['title']
-    duration = song['duration']
-    link = song['link']
-    requester_name = song['requester_name']
-    requester_id = song['requester_id']
-
-    lyrics_data = await get_lyrics(processed_query)
-    
-    # Informasi lagu
-    info_text = f"🎵 {'Memutar ulang' if is_loop else 'Sedang diputar'}:\n\n"
-    info_text += f"Judul: [{title}]({link})\n"
-    if lyrics_data:
-        info_text += f"Artis: {lyrics_data['artist']}\n"
-    info_text += f"Durasi: {format_time(duration)}\n"
-    info_text += f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n"
-
-    # Kirim informasi lagu
-    await app.send_message(chat_id, info_text, disable_web_page_preview=True)
-
-    # Jika lirik ditemukan, kirim sebagai pesan terpisah
-    if lyrics_data:
-        lyrics = lyrics_data['lyrics']
-        lyrics_text = f"📜 Lirik:\n\n{lyrics}"
-        
-        if len(lyrics_text) <= 4096:
-            await app.send_message(chat_id, lyrics_text)
-        else:
-            # Jika lirik terlalu panjang, bagi menjadi beberapa pesan
-            chunks = [lyrics_text[i:i+4096] for i in range(0, len(lyrics_text), 4096)]
-            for chunk in chunks:
-                await app.send_message(chat_id, chunk)
-    else:
-        await app.send_message(chat_id, "Lirik tidak ditemukan.")
 
 async def stop(chat_id):
     try:

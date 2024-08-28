@@ -2,11 +2,11 @@ from YMusic import app
 from YMusic.core import userbot
 from YMusic.utils.ytDetails import searchYt, extract_video_id, download_audio
 from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty, get_queue, MAX_QUEUE_SIZE, get_current_song
-from YMusic.utils.utils import delete_file, extract_song_title
+from YMusic.utils.utils import delete_file, extract_song_title, send_song_info
 from YMusic.utils.formaters import get_readable_time, format_time
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 from YMusic.misc import SUDOERS
-from YMusic.plugins.pytgcalls.pytgcalls import send_song_info
+
 from pyrogram import filters
 from collections import defaultdict
 
@@ -17,8 +17,6 @@ import aiohttp
 import json
 from urllib.parse import quote
 import textwrap
-
-MAX_MESSAGE_LENGTH = 4096
 
 PLAY_COMMAND = ["P", "PLAY"]
 PLAYLIST_COMMAND = ["PLAYLIST", "PL"]
@@ -179,18 +177,3 @@ async def _cancel(_, message):
         await message.reply_text("Tidak dapat membatalkan proses saat ini.")
     
     ONGOING_PROCESSES[chat_id] = None
-
-
-async def get_lyrics(query):
-    encoded_query = quote(query)
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(f"https://api.safone.dev/lyrics?title={encoded_query}") as response:
-                if response.status == 200:
-                    data = await response.json()
-                    return data
-                else:
-                    return None
-        except Exception as e:
-            print(f"Error fetching lyrics: {e}")
-            return None
