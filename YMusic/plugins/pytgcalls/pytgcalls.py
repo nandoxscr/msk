@@ -116,28 +116,31 @@ async def send_song_info(chat_id, song, is_loop=False):
 
     lyrics_data = await get_lyrics(processed_query)
     
-    message_text = f"🎵 {'Memutar ulang' if is_loop else 'Sedang diputar'}:\n\n"
-    
+    # Informasi lagu
+    info_text = f"🎵 {'Memutar ulang' if is_loop else 'Sedang diputar'}:\n\n"
+    info_text += f"Judul: [{title}]({link})\n"
     if lyrics_data:
-        message_text += f"Judul: [{title}]({link})\n"
-        message_text += f"Artis: {lyrics_data['artist']}\n"
-        message_text += f"Durasi: {format_time(duration)}\n"
-        message_text += f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n\n"
-        
-        lyrics = lyrics_data['lyrics']
-        message_text += f"📜 Lirik:\n{lyrics}"
-    else:
-        message_text += f"Judul: [{title}]({link})\n"
-        message_text += f"Durasi: {format_time(duration)}\n"
-        message_text += f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n\n"
-        message_text += "Lirik tidak ditemukan."
+        info_text += f"Artis: {lyrics_data['artist']}\n"
+    info_text += f"Durasi: {format_time(duration)}\n"
+    info_text += f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n"
 
-    if len(message_text) > MAX_MESSAGE_LENGTH:
-        parts = textwrap.wrap(message_text, MAX_MESSAGE_LENGTH, replace_whitespace=False)
-        for part in parts:
-            await app.send_message(chat_id, part, disable_web_page_preview=True)
+    # Kirim informasi lagu
+    await app.send_message(chat_id, info_text, disable_web_page_preview=True)
+
+    # Jika lirik ditemukan, kirim sebagai pesan terpisah
+    if lyrics_data:
+        lyrics = lyrics_data['lyrics']
+        lyrics_text = f"📜 Lirik:\n\n{lyrics}"
+        
+        if len(lyrics_text) <= 4096:
+            await app.send_message(chat_id, lyrics_text)
+        else:
+            # Jika lirik terlalu panjang, bagi menjadi beberapa pesan
+            chunks = [lyrics_text[i:i+4096] for i in range(0, len(lyrics_text), 4096)]
+            for chunk in chunks:
+                await app.send_message(chat_id, chunk)
     else:
-        await app.send_message(chat_id, message_text, disable_web_page_preview=True)
+        await app.send_message(chat_id, "Lirik tidak ditemukan.")
 
 async def stop(chat_id):
     try:

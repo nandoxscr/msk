@@ -6,7 +6,7 @@ from YMusic.utils.utils import delete_file, extract_song_title
 from YMusic.utils.formaters import get_readable_time, format_time
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 from YMusic.misc import SUDOERS
-
+from YMusic.plugins.pytgcalls.pytgcalls import send_song_info
 from pyrogram import filters
 from collections import defaultdict
 
@@ -64,29 +64,18 @@ async def _aPlay(_, message):
                 finish_time = time.time()
                 await start_play_time(chat_id)
                 total_time_taken = str(int(finish_time - start_time)) + "s"
-                duration_str = format_time(duration)
                 
-                lyrics_data = await get_lyrics(processed_query)
+                current_song = {
+                    'title': title,
+                    'duration': duration,
+                    'link': link,
+                    'requester_name': requester_name,
+                    'requester_id': requester_id,
+                    'query': processed_query
+                }
                 
-                if lyrics_data:
-                    message_text = (
-                        f"🎵 Sedang diputar:\n\n"
-                        f"Judul: [{title}]({link})\n"
-                        f"Artis: {lyrics_data['artist']}\n"
-                        f"Durasi: {duration_str}\n"
-                        f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n\n"
-                        f"📜 Lirik:\n{lyrics_data['lyrics'][:1000]}..."  # Batasi lirik ke 1000 karakter
-                    )
-                else:
-                    message_text = (
-                        f"🎵 Sedang diputar:\n\n"
-                        f"Judul: [{title}]({link})\n"
-                        f"Durasi: {duration_str}\n"
-                        f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n\n"
-                        f"Lirik tidak ditemukan."
-                    )
-                
-                await m.edit(message_text, disable_web_page_preview=True)
+                await send_song_info(chat_id, current_song)
+                await m.delete()
         elif queue_num:
             await m.edit(f"#{queue_num} - {title}\n\nDitambahkan di daftar putar oleh [{requester_name}](tg://user?id={requester_id}).")
         else:
