@@ -77,8 +77,6 @@ async def send_song_info(chat_id, song, is_loop=False):
     # Informasi lagu
     info_text = f"🎵 {'Memutar ulang' if is_loop else 'Sedang diputar'}:\n\n"
     info_text += f"Judul: [{title}]({link})\n"
-    if lyrics_data:
-        info_text += f"Artis: {lyrics_data['artist']}\n"
     info_text += f"Durasi: {format_time(duration)}\n"
     info_text += f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n"
 
