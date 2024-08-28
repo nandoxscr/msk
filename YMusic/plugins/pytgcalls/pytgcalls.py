@@ -5,7 +5,7 @@ from YMusic import call, app
 from YMusic.utils.queue import QUEUE, get_queue, clear_queue, pop_an_item, is_queue_empty, get_current_song
 from YMusic.utils.loop import get_loop, set_loop
 from YMusic.utils.formaters import get_readable_time, format_time
-from YMusic.utils.utils import clear_downloads_cache
+from YMusic.utils.utils import clear_downloads_cache, extract_song_title
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 from YMusic.plugins.sounds.music_commands import MAX_MESSAGE_LENGTH, get_lyrics
 
@@ -105,19 +105,20 @@ async def handler(client: PyTgCalls, update: Update):
         clear_downloads_cache()
 
 async def send_song_info(chat_id, song, is_loop=False):
-    query = song.get('query', song['title'])  # Gunakan judul sebagai fallback jika query tidak ada
+    original_query = song.get('query', song['title'])
+    processed_query = extract_song_title(original_query)
     title = song['title']
     duration = song['duration']
     link = song['link']
     requester_name = song['requester_name']
     requester_id = song['requester_id']
 
-    lyrics_data = await get_lyrics(query)
+    lyrics_data = await get_lyrics(processed_query)
     
     message_text = f"🎵 {'Memutar ulang' if is_loop else 'Sedang diputar'}:\n\n"
     
     if lyrics_data:
-        message_text += f"Judul: [{lyrics_data['title']}]({link})\n"
+        message_text += f"Judul: [{title}]({link})\n"
         message_text += f"Artis: {lyrics_data['artist']}\n"
         message_text += f"Durasi: {format_time(duration)}\n"
         message_text += f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n\n"

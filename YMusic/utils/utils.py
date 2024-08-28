@@ -1,5 +1,23 @@
 import os
 import glob
+import re
+
+def extract_song_title(query):
+    # Pola untuk mencocokkan format umum judul lagu
+    patterns = [
+        r'^(.*?)\s*(\(cover\)|\(feat\..*?\)|\(ft\..*?\)|\bcover\b|\bfeat\.|\bft\.).*$',
+        r'^(.*?)\s*-\s*.*$',
+        r'^(.*?)\s*by\s*.*$',
+    ]
+    
+    for pattern in patterns:
+        match = re.match(pattern, query, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+    
+    # Jika tidak ada pola yang cocok, kembalikan dua kata pertama dari query
+    words = query.split()
+    return ' '.join(words[:min(3, len(words))])
 
 def clear_downloads_cache():
     downloads_path = os.path.join(os.getcwd(), "downloads")
