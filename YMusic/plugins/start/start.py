@@ -7,23 +7,24 @@ START_COMMAND = ["START", "ST"]
 HELP_COMMAND = ["HELP"]
 
 HELP_MESSAGE = f"""
-💙 = <b>Semua Orang</b>
-❤️ = <b>Admin Saja</b>
+🙂 = <b>Semua Orang</b>
+😈 = <b>Admin Saja</b>
 
 **Commands:**
-💙| `{PREFIX}play [nama lagu|audio file]` - <i>Mencari musik dari youtube dan memutarnya</i>
-❤️| `{PREFIX}pause` - <i>Pause musik</i>
-❤️| `{PREFIX}resume` - <i>Resume musik</i>
-❤️| `{PREFIX}stop` - <i>Mengakhiri musik</i>
-❤️| `{PREFIX}skip` - <i>Melewati lagu sekarang dan melanjutkan ke lagu berikutnya</i>
-❤️| `{PREFIX}loop` - <i>Memutar ulang lagu yang sedang diputar sebanyak 5x</i>
-❤️| `{PREFIX}endloop` - <i>Mematikan pemutaran ulang</i>
+🙂| `{PREFIX}play [nama lagu|audio file]` - <i>Mencari musik dari youtube dan memutarnya</i>
+😈| `{PREFIX}pause` - <i>Pause musik</i>
+😈| `{PREFIX}resume` - <i>Resume musik</i>
+😈| `{PREFIX}stop` - <i>Mengakhiri musik</i>
+😈| `{PREFIX}skip` - <i>Melewati lagu sekarang dan melanjutkan ke lagu berikutnya</i>
+😈| `{PREFIX}loop` - <i>Memutar ulang lagu yang sedang diputar sebanyak 5x</i>
+😈| `{PREFIX}endloop` - <i>Mematikan pemutaran ulang</i>
 
 **Extra**
-💙| `{PREFIX}lyric [nama lagu]` - <i>Mencari lirik lagu</i>
-💙| `{PREFIX}nando [query]` - <i>Ini adalah <b>AI</b>, kamu bisa menanyakan apa saja, saya akan menjawab sebaik-baiknya</i>
+🙂| `{PREFIX}lyric [nama lagu]` - <i>Mencari lirik lagu</i>
+🙂| `{PREFIX}nando [query]` - <i>Ini adalah <b>AI</b>, kamu bisa menanyakan apa saja, saya akan menjawab sebaik-baiknya</i>
 
 <b>Powered by AI</b>
+<i>Made with </i>💙
 """
 
 # @app.on_message(filters.private & filters.command(START_COMMAND, PREFIX))
