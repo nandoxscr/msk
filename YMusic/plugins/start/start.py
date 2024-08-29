@@ -8,7 +8,7 @@ HELP_COMMAND = ["HELP"]
 
 HELP_MESSAGE = f"""
 🙂 = <b>Semua Orang</b>
-😈 = <b>Admin Saja</b>
+😈 = <b>Admin</b>
 
 **Commands:**
 🙂| `{PREFIX}play [nama lagu|audio file]` - <i>Mencari musik dari youtube dan memutarnya</i>
