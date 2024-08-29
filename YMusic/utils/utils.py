@@ -9,7 +9,7 @@ from urllib.parse import quote
 
 from YMusic import app
 from YMusic.utils.formaters import format_time
-import config import PREFIX, RPREFIX
+from config import PREFIX, RPREFIX
 
 MAX_MESSAGE_LENGTH = 4096
 
