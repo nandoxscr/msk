@@ -9,6 +9,7 @@ from YMusic.utils.formaters import get_readable_time, format_time
 from YMusic.utils.utils import clear_downloads_cache, send_song_info, MAX_MESSAGE_LENGTH
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 
+import os
 import time
 import asyncio
 
