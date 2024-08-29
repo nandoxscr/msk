@@ -185,23 +185,23 @@ async def _vPlay(_, message):
 
     ONGOING_PROCESSES[chat_id] = asyncio.current_task()
 
-    async def process_audio(title, duration, audio_file, link):
+    async def process_video(title, duration, video_file, link):
         duration_minutes = duration / 60 if isinstance(duration, (int, float)) else 0
 
         if duration_minutes > config.MAX_DURATION_MINUTES:
-            await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
-            await delete_file(audio_file)
+            await m.edit(f"Maaf, video ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+            await delete_file(video_file)
             return
 
         queue_length = get_queue_length(chat_id)
         if queue_length >= MAX_QUEUE_SIZE:
             await m.edit(f"Maaf, antrian sudah penuh (maksimal {MAX_QUEUE_SIZE} lagu). Tunggu sampai beberapa lagu selesai diputar.")
-            await delete_file(audio_file)
+            await delete_file(video_file)
             return
 
-        queue_num = add_to_queue(chat_id, title, duration, audio_file, link, requester_name, requester_id)
+        queue_num = add_to_queue(chat_id, title, duration, video_file, link, requester_name, requester_id)
         if queue_num == 1:
-            Status, Text = await userbot.playVideo(chat_id, audio_file)
+            Status, Text = await userbot.playVideo(chat_id, video_file)
             if not Status:
                 await m.edit(Text)
             else:
@@ -226,18 +226,18 @@ async def _vPlay(_, message):
 
     try:
         if message.reply_to_message and (message.reply_to_message.video or message.reply_to_message.video_note):
-            m = await message.reply_text("Memproses audio....")
-            audio_file = await message.reply_to_message.download()
-            title = message.reply_to_message.audio.title if message.reply_to_message.audio else "Voice Message"
-            duration = message.reply_to_message.audio.duration if message.reply_to_message.audio else 0
+            m = await message.reply_text("Memproses video....")
+            video_file = await message.reply_to_message.download()
+            title = message.reply_to_message.video.title if message.reply_to_message.video else "Video File"
+            duration = message.reply_to_message.video.duration if message.reply_to_message.video else 0
             link = message.reply_to_message.link
             
             if duration > config.MAX_DURATION_MINUTES * 60:
-                await m.edit(f"Maaf, audio ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
-                await delete_file(audio_file) 
+                await m.edit(f"Maaf, video ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+                await delete_file(video_file) 
                 return
 
-            await process_audio(title, duration, audio_file, link)
+            await process_video(title, duration, video_file, link)
 
         elif len(message.command) < 2:
             await message.reply_text("Mau lagu apa tuan? 🙏")
@@ -256,19 +256,19 @@ async def _vPlay(_, message):
                     await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
                     return
 
-            await m.edit("Mengunduh audio...")
+            await m.edit("Mengunduh video...")
             file_name = f"{title}"
-            audio_file, downloaded_title, audio_duration = await download_video(link, file_name)
+            video_file, downloaded_title, video_duration = await download_video(link, file_name)
 
-            if not audio_file:
-                return await m.edit("Gagal mengunduh audio. coba lagi.")
+            if not video_file:
+                return await m.edit("Gagal mengunduh video. coba lagi.")
 
-            if audio_duration > config.MAX_DURATION_MINUTES * 60:
+            if video_duration > config.MAX_DURATION_MINUTES * 60:
                 await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
-                await delete_file(audio_file)
+                await delete_file(video_file)
                 return
 
-            await process_audio(downloaded_title, audio_duration, audio_file, link)
+            await process_video(downloaded_title, video_duration, video_file, link)
 
     except asyncio.CancelledError:
         await message.reply_text("Proses dibatalkan.")
