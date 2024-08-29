@@ -48,7 +48,7 @@ async def _stop(_, message):
         Text = await userbot.stop(message.chat.id)
         try:
             clear_queue(message.chat.id)
-            clear_downloads_cache()
+            await clear_downloads_cache()
         except:
             pass
         await message.reply_text(Text)

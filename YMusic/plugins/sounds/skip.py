@@ -41,7 +41,7 @@ async def _aSkip(_, message):
             if not popped_item:
                 await m.edit("Tidak ada lagu berikutnya. Meninggalkan obrolan suara...")
                 await stop(chat_id)
-                clear_downloads_cache()
+                await clear_downloads_cache()
             else:
                 next_song = get_current_song(chat_id)
                 if next_song:
@@ -55,7 +55,7 @@ async def _aSkip(_, message):
                 else:
                     await m.edit("Tidak ada lagu berikutnya. Meninggalkan obrolan suara...")
                     await stop(chat_id)
-                    clear_downloads_cache()
+                    await clear_downloads_cache()
         except Exception as e:
             logger.error(f"Error in _aSkip for chat {chat_id}: {e}")
             await m.edit(f"Terjadi kesalahan: {str(e)}")

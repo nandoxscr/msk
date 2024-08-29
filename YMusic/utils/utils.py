@@ -13,7 +13,7 @@ from config import PREFIX, RPREFIX
 
 MAX_MESSAGE_LENGTH = 4096
 
-def clear_downloads_cache():
+async def clear_downloads_cache():
     downloads_path = os.path.join(os.getcwd(), "downloads")
     try:
         shutil.rmtree(downloads_path)

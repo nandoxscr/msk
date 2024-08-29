@@ -61,7 +61,7 @@ async def handler(client: PyTgCalls, update: Update):
         if not popped_item:
             logger.info(f"Queue is empty for chat {chat_id}")
             await stop(chat_id)
-            clear_downloads_cache()
+            await clear_downloads_cache()
             await stop_play_time(chat_id)
             await app.send_message(chat_id, "Semua lagu telah diputar. Meninggalkan obrolan suara dan membersihkan cache.")
         else:
@@ -80,19 +80,19 @@ async def handler(client: PyTgCalls, update: Update):
                     await app.send_message(chat_id, "Terjadi kesalahan saat mencoba memutar lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
                     await stop(chat_id)
                     await stop_play_time(chat_id)
-                    clear_downloads_cache()
+                    await clear_downloads_cache()
             else:
                 logger.warning(f"No next song found for chat {chat_id} after popping an item")
                 await stop(chat_id)
                 await stop_play_time(chat_id)
-                clear_downloads_cache()
+                await clear_downloads_cache()
                 await app.send_message(chat_id, "Tidak ada lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
     except Exception as e:
         logger.error(f"Error in stream_end handler for chat {chat_id}: {e}")
         await app.send_message(chat_id, f"Terjadi kesalahan: {str(e)}. Meninggalkan obrolan suara dan membersihkan cache.")
         await stop(chat_id)
         await stop_play_time(chat_id)
-        clear_downloads_cache()
+        await clear_downloads_cache()
 
 async def stop(chat_id):
     try:
@@ -102,4 +102,4 @@ async def stop(chat_id):
     except Exception as e:
         logger.error(f"Error in stop: {e}")
     finally:
-        clear_downloads_cache()
+        await clear_downloads_cache()
