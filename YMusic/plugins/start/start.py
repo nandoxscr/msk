@@ -7,8 +7,8 @@ START_COMMAND = ["START", "ST"]
 HELP_COMMAND = ["HELP"]
 
 HELP_MESSAGE = f"""
-💙 = Semua orang
-❤️ = Admin saja
+💙 = <b>Semua Orang</b>
+❤️ = <b>Admin Saja</b>
 
 **Commands:**
 💙| `{PREFIX}play [nama lagu|audio file]` - <i>Mencari musik dari youtube dan memutarnya</i>
@@ -21,7 +21,9 @@ HELP_MESSAGE = f"""
 
 **Extra**
 💙| `{PREFIX}lyric [nama lagu]` - <i>Mencari lirik lagu</i>
-💙| `{PREFIX}nando [query]` - <i>Ini adalah AI, kamu bisa menanyakan apa saja, saya akan menjawab sebaik-baiknya</i>
+💙| `{PREFIX}nando [query]` - <i>Ini adalah <b>AI</b>, kamu bisa menanyakan apa saja, saya akan menjawab sebaik-baiknya</i>
+
+<b>Powered by AI</b>
 """
 
 # @app.on_message(filters.private & filters.command(START_COMMAND, PREFIX))
