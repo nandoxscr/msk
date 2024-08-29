@@ -1,7 +1,7 @@
 from YMusic import app
 from YMusic.core import userbot
 from YMusic.utils.ytDetails import searchYt, extract_video_id, download_audio, download_video
-from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty, get_queue, MAX_QUEUE_SIZE, get_current_song
+from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty, get_queue, MAX_QUEUE_SIZE, get_current_song, QUEUE
 from YMusic.utils.utils import delete_file, send_song_info
 from YMusic.utils.formaters import get_readable_time, format_time
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
@@ -10,17 +10,20 @@ from YMusic.misc import SUDOERS
 from pyrogram import filters
 from collections import defaultdict
 
-import asyncio
 import time
 import config
 
 PLAY_COMMAND = ["P", "PLAY"]
 VPLAY_COMMAND = ["VP", "VPLAY"]
 PLAYLIST_COMMAND = ["PLAYLIST", "PL"]
-CANCEL_COMMAND = ["CANCEL"]
+TEST_COMMAND = ["T"]
 PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
-ONGOING_PROCESSES = defaultdict(lambda: None)
+
+@app.on_message((filters.command(TEST_COMMAND, [PREFIX, RPREFIX])) & filters.group)
+async def _aTestIng(_, message):
+    chat_id = message.chat.id
+    await message.reply_text(f"Json:\n\n {QUEUE}")
 
 @app.on_message((filters.command(PLAY_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _aPlay(_, message):
@@ -28,12 +31,6 @@ async def _aPlay(_, message):
     chat_id = message.chat.id
     requester_name = message.from_user.first_name
     requester_id = message.from_user.id
-
-    if ONGOING_PROCESSES[chat_id]:
-        await message.reply_text("Proses lain sedang berlangsung. Tunggu sampai selesai.")
-        return
-
-    ONGOING_PROCESSES[chat_id] = asyncio.current_task()
 
     async def process_audio(title, duration, audio_file, link):
         duration_minutes = duration / 60 if isinstance(duration, (int, float)) else 0
@@ -120,12 +117,8 @@ async def _aPlay(_, message):
 
             await process_audio(downloaded_title, audio_duration, audio_file, link)
 
-    except asyncio.CancelledError:
-        await message.reply_text("Proses dibatalkan.")
     except Exception as e:
         await message.reply_text(f"<code>Error: {e}</code>")
-    finally:
-        ONGOING_PROCESSES[chat_id] = None  
 
 @app.on_message((filters.command(PLAYLIST_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _playlist(_, message):
@@ -154,36 +147,12 @@ async def _playlist(_, message):
         
         await message.reply_text(playlist, disable_web_page_preview=True)
 
-
-@app.on_message((filters.command(CANCEL_COMMAND, [PREFIX, RPREFIX])) & filters.group)
-async def _cancel(_, message):
-    chat_id = message.chat.id
-    
-    if not ONGOING_PROCESSES[chat_id]:
-        await message.reply_text("Tidak ada proses yang sedang berlangsung untuk dibatalkan.")
-        return
-
-    task = ONGOING_PROCESSES[chat_id]
-    if isinstance(task, asyncio.Task) and not task.done():
-        task.cancel()
-        await message.reply_text("Proses dibatalkan.")
-    else:
-        await message.reply_text("Tidak dapat membatalkan proses saat ini.")
-    
-    ONGOING_PROCESSES[chat_id] = None
-
 @app.on_message((filters.command(VPLAY_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _vPlay(_, message):
     start_time = time.time()
     chat_id = message.chat.id
     requester_name = message.from_user.first_name
     requester_id = message.from_user.id
-
-    if ONGOING_PROCESSES[chat_id]:
-        await message.reply_text("Proses lain sedang berlangsung. Tunggu sampai selesai.")
-        return
-
-    ONGOING_PROCESSES[chat_id] = asyncio.current_task()
 
     async def process_video(title, duration, video_file, link):
         duration_minutes = duration / 60 if isinstance(duration, (int, float)) else 0
@@ -270,9 +239,5 @@ async def _vPlay(_, message):
 
             await process_video(downloaded_title, video_duration, video_file, link)
 
-    except asyncio.CancelledError:
-        await message.reply_text("Proses dibatalkan.")
     except Exception as e:
         await message.reply_text(f"<code>Error: {e}</code>")
-    finally:
-        ONGOING_PROCESSES[chat_id] = None  
