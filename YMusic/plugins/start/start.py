@@ -12,6 +12,7 @@ HELP_MESSAGE = f"""
 
 **Commands:**
 🙂| `{PREFIX}play [nama lagu|audio file]` - <i>Mencari musik dari youtube dan memutarnya</i>
+🙂| `{PREFIX}vplay [nama lagu|video file]` - <i>Mencari musik dari youtube dan memutarnya dalam bentuk video</i>
 😈| `{PREFIX}pause` - <i>Pause musik</i>
 😈| `{PREFIX}resume` - <i>Resume musik</i>
 🙂| `{PREFIX}current` - <i>Melihat lagu yang sekarang diputar</i>
