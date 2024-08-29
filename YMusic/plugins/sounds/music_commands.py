@@ -15,6 +15,7 @@ import time
 import config
 
 PLAY_COMMAND = ["P", "PLAY"]
+VPLAY_COMMAND = ["VP", "VPLAY"]
 PLAYLIST_COMMAND = ["PLAYLIST", "PL"]
 CANCEL_COMMAND = ["CANCEL"]
 PREFIX = config.PREFIX
@@ -170,3 +171,108 @@ async def _cancel(_, message):
         await message.reply_text("Tidak dapat membatalkan proses saat ini.")
     
     ONGOING_PROCESSES[chat_id] = None
+
+@app.on_message((filters.command(VPLAY_COMMAND, [PREFIX, RPREFIX])) & filters.group)
+async def _vPlay(_, message):
+    start_time = time.time()
+    chat_id = message.chat.id
+    requester_name = message.from_user.first_name
+    requester_id = message.from_user.id
+
+    if ONGOING_PROCESSES[chat_id]:
+        await message.reply_text("Proses lain sedang berlangsung. Tunggu sampai selesai.")
+        return
+
+    ONGOING_PROCESSES[chat_id] = asyncio.current_task()
+
+    async def process_audio(title, duration, audio_file, link):
+        duration_minutes = duration / 60 if isinstance(duration, (int, float)) else 0
+
+        if duration_minutes > config.MAX_DURATION_MINUTES:
+            await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+            await delete_file(audio_file)
+            return
+
+        queue_length = get_queue_length(chat_id)
+        if queue_length >= MAX_QUEUE_SIZE:
+            await m.edit(f"Maaf, antrian sudah penuh (maksimal {MAX_QUEUE_SIZE} lagu). Tunggu sampai beberapa lagu selesai diputar.")
+            await delete_file(audio_file)
+            return
+
+        queue_num = add_to_queue(chat_id, title, duration, audio_file, link, requester_name, requester_id)
+        if queue_num == 1:
+            Status, Text = await userbot.playVideo(chat_id, audio_file)
+            if not Status:
+                await m.edit(Text)
+            else:
+                finish_time = time.time()
+                await start_play_time(chat_id)
+                total_time_taken = str(int(finish_time - start_time)) + "s"
+                
+                current_song = {
+                    'title': title,
+                    'duration': duration,
+                    'link': link,
+                    'requester_name': requester_name,
+                    'requester_id': requester_id
+                }
+                
+                await send_song_info(chat_id, current_song)
+                await m.delete()
+        elif queue_num:
+            await m.edit(f"#{queue_num} - {title}\n\nDitambahkan di daftar putar oleh [{requester_name}](tg://user?id={requester_id}).")
+        else:
+            await m.edit(f"Gagal menambahkan lagu ke antrian. Antrian mungkin sudah penuh.")
+
+    try:
+        if message.reply_to_message and (message.reply_to_message.video or message.reply_to_message.video_note):
+            m = await message.reply_text("Memproses audio....")
+            audio_file = await message.reply_to_message.download()
+            title = message.reply_to_message.audio.title if message.reply_to_message.audio else "Voice Message"
+            duration = message.reply_to_message.audio.duration if message.reply_to_message.audio else 0
+            link = message.reply_to_message.link
+            
+            if duration > config.MAX_DURATION_MINUTES * 60:
+                await m.edit(f"Maaf, audio ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+                await delete_file(audio_file) 
+                return
+
+            await process_audio(title, duration, audio_file, link)
+
+        elif len(message.command) < 2:
+            await message.reply_text("Mau lagu apa tuan? 🙏")
+
+        else:
+            m = await message.reply_text("Mencari lagu di youtube....")
+            original_query = message.text.split(maxsplit=1)[1]
+
+            title, duration, link = await searchYt(original_query)
+            if not title:
+                return await m.edit("Tidak ada hasil ditemukan")
+
+            if duration is not None:
+                duration_minutes = duration / 60
+                if duration_minutes > config.MAX_DURATION_MINUTES:
+                    await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+                    return
+
+            await m.edit("Mengunduh audio...")
+            file_name = f"{title}"
+            audio_file, downloaded_title, audio_duration = await download_audio(link, file_name)
+
+            if not audio_file:
+                return await m.edit("Gagal mengunduh audio. coba lagi.")
+
+            if audio_duration > config.MAX_DURATION_MINUTES * 60:
+                await m.edit(f"Maaf, lagu ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
+                await delete_file(audio_file)
+                return
+
+            await process_audio(downloaded_title, audio_duration, audio_file, link)
+
+    except asyncio.CancelledError:
+        await message.reply_text("Proses dibatalkan.")
+    except Exception as e:
+        await message.reply_text(f"<code>Error: {e}</code>")
+    finally:
+        ONGOING_PROCESSES[chat_id] = None  
