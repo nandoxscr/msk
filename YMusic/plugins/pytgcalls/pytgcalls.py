@@ -16,26 +16,28 @@ import asyncio
 async def handler(client: PyTgCalls, update: Update):
     chat_id = update.chat_id
     try:
-        print(f"Stream ended for chat {chat_id}")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Stream ended for chat {chat_id}")
 
         loop_count = await get_loop(chat_id)
         current_song = get_current_song(chat_id)
+        print(f"Current song before processing: {current_song}")
 
         if loop_count > 0 and current_song:
+            print(f"Looping song: {current_song['title']}, loop count: {loop_count}")
             await set_loop(chat_id, loop_count - 1)
             if current_song['is_video']:
+                print("Attempting to play looped video")
                 await userbot.playVideo(chat_id, current_song['audio_file'])
             else:
+                print("Attempting to play looped audio")
                 await userbot.playAudio(chat_id, current_song['audio_file'])
             await send_song_info(chat_id, current_song, is_loop=True)
             return
-        
-        print(f"Stream ended for chat {chat_id}")
-        print(f"Current song before popping: {get_current_song(chat_id)}")
+
+        print("Popping item from queue")
         popped_item = pop_an_item(chat_id)
         print(f"Popped item: {popped_item}")
-        print(f"Current song after popping: {get_current_song(chat_id)}")
-        
+
         if not popped_item:
             print(f"Queue is empty for chat {chat_id}")
             await stop(chat_id)
@@ -44,14 +46,34 @@ async def handler(client: PyTgCalls, update: Update):
             await app.send_message(chat_id, "Semua lagu telah diputar. Meninggalkan obrolan suara dan membersihkan cache.")
         else:
             next_song = get_current_song(chat_id)
+            print(f"Next song: {next_song}")
             if next_song:
-                print(f"Attempting to play next song: {next_song['title']} in chat {chat_id} is video {next_song['is_video']}")
-                if next_song['is_video']:
-                    await userbot.playVideo(chat_id, next_song['audio_file'])
-                else:
-                    await userbot.playAudio(chat_id, next_song['audio_file'])
-                await start_play_time(chat_id)
-                await send_song_info(chat_id, next_song)
+                try:
+                    print(f"Attempting to play next song: {next_song['title']} in chat {chat_id}, is_video: {next_song['is_video']}")
+                    
+                    # Check if the file exists
+                    if os.path.exists(next_song['audio_file']):
+                        if next_song['is_video']:
+                            print("Playing video")
+                            await userbot.playVideo(chat_id, next_song['audio_file'])
+                        else:
+                            print("Playing audio")
+                            await userbot.playAudio(chat_id, next_song['audio_file'])
+                        
+                        print("Starting play time")
+                        await start_play_time(chat_id)
+                        print("Sending song info")
+                        await send_song_info(chat_id, next_song)
+                    else:
+                        print(f"File not found: {next_song['audio_file']}")
+                        raise FileNotFoundError(f"File not found: {next_song['audio_file']}")
+                    
+                except Exception as e:
+                    print(f"Error playing next song in chat {chat_id}: {e}")
+                    await app.send_message(chat_id, f"Terjadi kesalahan saat mencoba memutar lagu berikutnya: {str(e)}. Meninggalkan obrolan suara dan membersihkan cache.")
+                    await stop(chat_id)
+                    await stop_play_time(chat_id)
+                    await clear_downloads_cache()
             else:
                 print(f"No next song found for chat {chat_id} after popping an item")
                 await stop(chat_id)
