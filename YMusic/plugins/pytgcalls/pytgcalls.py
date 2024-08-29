@@ -5,7 +5,7 @@ from YMusic import call, app
 from YMusic.utils.queue import QUEUE, get_queue, clear_queue, pop_an_item, is_queue_empty, get_current_song
 from YMusic.utils.loop import get_loop, set_loop
 from YMusic.utils.formaters import get_readable_time, format_time
-from YMusic.utils.utils import clear_downloads_cache, send_song_info, MAX_MESSAGE_LENGTH, get_lyrics
+from YMusic.utils.utils import clear_downloads_cache, send_song_info, MAX_MESSAGE_LENGTH
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 
 import time
