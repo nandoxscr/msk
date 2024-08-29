@@ -49,7 +49,7 @@ async def send_song_info(chat_id, song, is_loop=False):
     info_text = f"🎵 {'Memutar ulang' if is_loop else 'Sedang diputar'}:\n\n"
     info_text += f"Judul: [{title}]({link})\n"
     info_text += f"Durasi: {format_time(duration)}\n"
-    info_text += f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n"
-    info_text += f"#Note: Jika ingin mencari lirik lagu gunakan command \"{PREFIX}lyric [nama lagu]\"\n"
+    info_text += f"Direquest oleh: [{requester_name}](tg://user?id={requester_id})\n\n"
+    info_text += f"#Note: <i>Lirik lagu gunakan command \"{PREFIX}lyric [nama lagu]\"</i>\n"
     await app.send_message(chat_id, info_text, disable_web_page_preview=True)
 
