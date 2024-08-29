@@ -21,7 +21,7 @@ HELP_MESSAGE = f"""
 😈| `{PREFIX}loop` - <i>Memutar ulang lagu yang sedang diputar sebanyak 5x</i>
 😈| `{PREFIX}endloop` - <i>Mematikan pemutaran ulang</i>
 
-**Extra**
+**Extra:**
 🙂| `{PREFIX}lyric [nama lagu]` - <i>Mencari lirik lagu</i>
 🙂| `{PREFIX}nando [query]` - <i>Ini adalah <b>AI</b>, kamu bisa menanyakan apa saja, saya akan menjawab sebaik-baiknya</i>
 
