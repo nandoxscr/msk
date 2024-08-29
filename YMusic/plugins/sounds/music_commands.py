@@ -13,10 +13,6 @@ from collections import defaultdict
 import asyncio
 import time
 import config
-import aiohttp
-import json
-from urllib.parse import quote
-import textwrap
 
 PLAY_COMMAND = ["P", "PLAY"]
 PLAYLIST_COMMAND = ["PLAYLIST", "PL"]
