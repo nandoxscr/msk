@@ -17,8 +17,8 @@ RPREFIX = config.RPREFIX
 STOP_COMMAND = ["STOP"]
 PAUSE_COMMAND = ["PAUSE"]
 RESUME_COMMAND = ["RESUME"]
-LOOP_COMMAND = ["LOOP", "L"]
-LOOPEND_COMMAND = ["ENDLOOP", "EL"]
+LOOP_COMMAND = ["LOOP"]
+LOOPEND_COMMAND = ["ENDLOOP"]
 ADDSUDO_COMMAND = ["ADDSUDO"]
 REMOVESUDO_COMMAND = ["REMOVESUDO"]
 SETMAXDURATION_COMMAND = ["SETMAXDURATION", "SMD"]
@@ -210,20 +210,32 @@ async def _nando(_, message):
     query = " ".join(message.command[1:])
     api_url = f"https://api.safone.dev/bard?message={query}"
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(api_url) as response:
-            if response.status == 200:
-                data = await response.json()
-                result = data.get('message', 'No message received from API')
-                
-                # Check if the result is too long
-                if len(result) > 4096:
-                    # Split the message into chunks of 4096 characters
-                    chunks = [result[i:i+4096] for i in range(0, len(result), 4096)]
-                    for chunk in chunks:
-                        await message.reply_text(chunk)
-                else:
-                    await message.reply_text(result)
-            else:
-                await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status}")
+    # Send loading message
+    loading_message = await message.reply_text("Saya sedang mencarinya...")
 
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(api_url) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    result = data.get('message', 'No message received from API')
+                    
+                    # Delete loading message
+                    await loading_message.delete()
+                    
+                    # Check if the result is too long
+                    if len(result) > 4096:
+                        # Split the message into chunks of 4096 characters
+                        chunks = [result[i:i+4096] for i in range(0, len(result), 4096)]
+                        for chunk in chunks:
+                            await message.reply_text(chunk)
+                    else:
+                        await message.reply_text(result)
+                else:
+                    # Delete loading message
+                    await loading_message.delete()
+                    await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status}")
+        except Exception as e:
+            # Delete loading message
+            await loading_message.delete()
+            await message.reply_text(f"An error occurred: {str(e)}")
