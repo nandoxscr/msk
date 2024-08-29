@@ -30,7 +30,10 @@ async def _skip(chat_id):
     next_song = get_queue(chat_id)[0]
     try:
         print(f"Attempting to play next song: {next_song['title']} in chat {chat_id}")
-        await userbot.playAudio(chat_id, next_song['audio_file'])
+        if next_song['is_video']:
+            await userbot.playVideo(chat_id, next_song['audio_file'])
+        else:
+            await userbot.playAudio(chat_id, next_song['audio_file'])
         return [next_song['title'], next_song['duration'], next_song['link'], next_song['requester_name'], next_song['requester_id'], time.time()]
     except Exception as e:
         print(f"Error in _skip for chat {chat_id}: {e}")
@@ -47,7 +50,10 @@ async def handler(client: PyTgCalls, update: Update):
 
         if loop_count > 0 and current_song:
             await set_loop(chat_id, loop_count - 1)
-            await userbot.playAudio(chat_id, current_song['audio_file'])
+            if current_song['is_video']:
+                await userbot.playVideo(chat_id, current_song['audio_file'])
+            else:
+                await userbot.playAudio(chat_id, current_song['audio_file'])
             await send_song_info(chat_id, current_song, is_loop=True)
             return
 
@@ -63,7 +69,10 @@ async def handler(client: PyTgCalls, update: Update):
             if next_song:
                 try:
                     logger.info(f"Attempting to play next song: {next_song['title']} in chat {chat_id}")
-                    await userbot.playAudio(chat_id, next_song['audio_file'])
+                    if next_song['is_video']:
+                        await userbot.playVideo(chat_id, next_song['audio_file'])
+                    else:
+                        await userbot.playAudio(chat_id, next_song['audio_file'])
                     await start_play_time(chat_id)
                     await send_song_info(chat_id, next_song)
                 except Exception as e:
