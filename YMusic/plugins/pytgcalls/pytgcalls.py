@@ -13,9 +13,20 @@ import os
 import time
 import asyncio
 
+last_handled_time = {}
+
 @call.on_update(filters.stream_end)
 async def handler(client: PyTgCalls, update: Update):
     chat_id = update.chat_id
+    current_time = time.time()
+
+    # Cek apakah event ini sudah diproses dalam 1 detik terakhir
+    if chat_id in last_handled_time and current_time - last_handled_time[chat_id] < 1:
+        print(f"Ignoring duplicate stream_end event for chat {chat_id}")
+        return
+
+    last_handled_time[chat_id] = current_time
+
     try:
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Stream ended for chat {chat_id}")
 
@@ -24,13 +35,10 @@ async def handler(client: PyTgCalls, update: Update):
         print(f"Current song before processing: {current_song}")
 
         if loop_count > 0 and current_song:
-            print(f"Looping song: {current_song['title']}, loop count: {loop_count}")
             await set_loop(chat_id, loop_count - 1)
             if current_song['is_video']:
-                print("Attempting to play looped video")
                 await userbot.playVideo(chat_id, current_song['audio_file'])
             else:
-                print("Attempting to play looped audio")
                 await userbot.playAudio(chat_id, current_song['audio_file'])
             await send_song_info(chat_id, current_song, is_loop=True)
             return
@@ -51,28 +59,18 @@ async def handler(client: PyTgCalls, update: Update):
             if next_song:
                 try:
                     print(f"Attempting to play next song: {next_song['title']} in chat {chat_id}, is_video: {next_song['is_video']}")
-                    
-                    # Check if the file exists
-                    if os.path.exists(next_song['audio_file']):
-                        if next_song['is_video']:
-                            print("Playing video")
-                            await userbot.playVideo(chat_id, next_song['audio_file'])
-                        else:
-                            print("Playing audio")
-                            await asyncio.sleep(2)  
-                            await userbot.playAudio(chat_id, next_song['audio_file'])
-                        
-                        print("Starting play time")
-                        await start_play_time(chat_id)
-                        print("Sending song info")
-                        await send_song_info(chat_id, next_song)
+                    if next_song['is_video']:
+                        print("Playing video")
+                        await userbot.playVideo(chat_id, next_song['audio_file'])
                     else:
-                        print(f"File not found: {next_song['audio_file']}")
-                        raise FileNotFoundError(f"File not found: {next_song['audio_file']}")
-                    
+                        print("Playing audio")
+                        await asyncio.sleep(0.5)  # Tambahkan delay kecil sebelum memutar audio
+                        await userbot.playAudio(chat_id, next_song['audio_file'])
+                    await start_play_time(chat_id)
+                    await send_song_info(chat_id, next_song)
                 except Exception as e:
                     print(f"Error playing next song in chat {chat_id}: {e}")
-                    await app.send_message(chat_id, f"Terjadi kesalahan saat mencoba memutar lagu berikutnya: {str(e)}. Meninggalkan obrolan suara dan membersihkan cache.")
+                    await app.send_message(chat_id, "Terjadi kesalahan saat mencoba memutar lagu berikutnya. Meninggalkan obrolan suara dan membersihkan cache.")
                     await stop(chat_id)
                     await stop_play_time(chat_id)
                     await clear_downloads_cache()
