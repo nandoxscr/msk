@@ -14,6 +14,8 @@ HELP_MESSAGE = f"""
 🙂| `{PREFIX}play [nama lagu|audio file]` - <i>Mencari musik dari youtube dan memutarnya</i>
 😈| `{PREFIX}pause` - <i>Pause musik</i>
 😈| `{PREFIX}resume` - <i>Resume musik</i>
+🙂| `{PREFIX}current` - <i>Melihat lagu yang sekarang diputar</i>
+🙂| `{PREFIX}playlist` - <i>Melihat daftar lagu</i>
 😈| `{PREFIX}stop` - <i>Mengakhiri musik</i>
 😈| `{PREFIX}skip` - <i>Melewati lagu sekarang dan melanjutkan ke lagu berikutnya</i>
 😈| `{PREFIX}loop` - <i>Memutar ulang lagu yang sedang diputar sebanyak 5x</i>
