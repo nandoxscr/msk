@@ -49,7 +49,7 @@ async def _aPlay(_, message):
             await delete_file(audio_file)
             return
 
-        queue_num = add_to_queue(chat_id, title, duration, audio_file, link, requester_name, requester_id)
+        queue_num = add_to_queue(chat_id, title, duration, audio_file, link, requester_name, requester_id, False)
         if queue_num == 1:
             Status, Text = await userbot.playAudio(chat_id, audio_file)
             if not Status:
@@ -199,7 +199,7 @@ async def _vPlay(_, message):
             await delete_file(video_file)
             return
 
-        queue_num = add_to_queue(chat_id, title, duration, video_file, link, requester_name, requester_id)
+        queue_num = add_to_queue(chat_id, title, duration, video_file, link, requester_name, requester_id, True)
         if queue_num == 1:
             Status, Text = await userbot.playVideo(chat_id, video_file)
             if not Status:

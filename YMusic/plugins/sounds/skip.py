@@ -1,4 +1,5 @@
 from YMusic import call, app
+from YMusic.core import userbot
 from YMusic.utils.queue import QUEUE, pop_an_item, get_queue, clear_queue, is_queue_empty, get_current_song
 from YMusic.utils.loop import get_loop
 from YMusic.misc import SUDOERS
@@ -44,13 +45,7 @@ async def _aSkip(_, message):
             else:
                 next_song = get_current_song(chat_id)
                 if next_song:
-                    await call.play(
-                        chat_id,
-                        MediaStream(
-                            next_song['audio_file'],
-                            video_flags=MediaStream.Flags.IGNORE,
-                        ),
-                    )
+                    await userbot.playAudio(chat_id, next_song['audio_file'])
                     await start_play_time(chat_id)
                     await m.delete()
                     await send_song_info(chat_id, next_song)
