@@ -2,7 +2,7 @@ from YMusic import app
 from YMusic.core import userbot
 from YMusic.utils.ytDetails import searchYt, extract_video_id, download_audio
 from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty, get_queue, MAX_QUEUE_SIZE, get_current_song
-from YMusic.utils.utils import delete_file, extract_song_title, send_song_info
+from YMusic.utils.utils import delete_file, send_song_info
 from YMusic.utils.formaters import get_readable_time, format_time
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 from YMusic.misc import SUDOERS
@@ -38,7 +38,7 @@ async def _aPlay(_, message):
 
     ONGOING_PROCESSES[chat_id] = asyncio.current_task()
 
-    async def process_audio(title, duration, audio_file, link, original_query):
+    async def process_audio(title, duration, audio_file, link):
         duration_minutes = duration / 60 if isinstance(duration, (int, float)) else 0
 
         if duration_minutes > config.MAX_DURATION_MINUTES:
@@ -52,8 +52,7 @@ async def _aPlay(_, message):
             await delete_file(audio_file)
             return
 
-        processed_query = extract_song_title(original_query)
-        queue_num = add_to_queue(chat_id, title, duration, audio_file, link, requester_name, requester_id, processed_query)
+        queue_num = add_to_queue(chat_id, title, duration, audio_file, link, requester_name, requester_id)
         if queue_num == 1:
             Status, Text = await userbot.playAudio(chat_id, audio_file)
             if not Status:
@@ -68,8 +67,7 @@ async def _aPlay(_, message):
                     'duration': duration,
                     'link': link,
                     'requester_name': requester_name,
-                    'requester_id': requester_id,
-                    'query': processed_query
+                    'requester_id': requester_id
                 }
                 
                 await send_song_info(chat_id, current_song)
@@ -86,14 +84,13 @@ async def _aPlay(_, message):
             title = message.reply_to_message.audio.title if message.reply_to_message.audio else "Voice Message"
             duration = message.reply_to_message.audio.duration if message.reply_to_message.audio else 0
             link = message.reply_to_message.link
-            original_query = title
-
+            
             if duration > config.MAX_DURATION_MINUTES * 60:
                 await m.edit(f"Maaf, audio ini terlalu panjang. Maksimal durasi adalah {config.MAX_DURATION_MINUTES} menit.")
                 await delete_file(audio_file) 
                 return
 
-            await process_audio(title, duration, audio_file, link, original_query)
+            await process_audio(title, duration, audio_file, link)
 
         elif len(message.command) < 2:
             await message.reply_text("Mau lagu apa tuan? 🙏")
@@ -124,7 +121,7 @@ async def _aPlay(_, message):
                 await delete_file(audio_file)
                 return
 
-            await process_audio(downloaded_title, audio_duration, audio_file, link, original_query)
+            await process_audio(downloaded_title, audio_duration, audio_file, link)
 
     except asyncio.CancelledError:
         await message.reply_text("Proses dibatalkan.")

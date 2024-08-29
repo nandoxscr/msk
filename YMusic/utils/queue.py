@@ -4,7 +4,7 @@ QUEUE = {}
 MAX_QUEUE_SIZE = 10
 queue_lock = Lock()
 
-def add_to_queue(chat_id, title, duration, audio_file, link, requester_name, requester_id, query):
+def add_to_queue(chat_id, title, duration, audio_file, link, requester_name, requester_id):
     with queue_lock:
         if chat_id not in QUEUE:
             QUEUE[chat_id] = []
@@ -16,8 +16,7 @@ def add_to_queue(chat_id, title, duration, audio_file, link, requester_name, req
             "audio_file": audio_file, 
             "link": link,
             "requester_name": requester_name,
-            "requester_id": requester_id,
-            "query": query
+            "requester_id": requester_id
         })
         return len(QUEUE[chat_id])
 
