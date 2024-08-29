@@ -64,6 +64,42 @@ async def download_audio(link, file_name):
         traceback.print_exc()
         return None, None, None
 
+async def download_video(link, file_name):
+    output_path = os.path.join(os.getcwd(), "downloads")
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    ydl_opts = {
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'outtmpl': os.path.join(output_path, f'{file_name}.%(ext)s'),
+        'cookiefile': config.COOK_PATH,
+        'ffmpeg_location': '/usr/bin/ffmpeg',
+        'verbose': False,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(link, download=False)
+            duration = info.get('duration')
+            title = info.get('title')
+            
+            if asyncio.current_task().cancelled():
+                print("Download cancelled")
+                return None, None, None
+            
+            ydl.download([link])
+        
+        output_file = os.path.join(output_path, f'{file_name}.mp4')
+        if not os.path.exists(output_file):
+            raise Exception(f"File tidak berhasil diunduh: {output_file}")
+        
+        return output_file, title, duration
+    except Exception as e:
+        print(f"Error in download_video: {e}")
+        import traceback
+        traceback.print_exc()
+        return None, None, None
+
 def searchPlaylist(query):
     query = str(query)
     playlistResult = PlaylistsSearch(query, limit=1)

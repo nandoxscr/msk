@@ -1,6 +1,6 @@
 from YMusic import app
 from YMusic.core import userbot
-from YMusic.utils.ytDetails import searchYt, extract_video_id, download_audio
+from YMusic.utils.ytDetails import searchYt, extract_video_id, download_audio, download_video
 from YMusic.utils.queue import add_to_queue, get_queue_length, is_queue_empty, get_queue, MAX_QUEUE_SIZE, get_current_song
 from YMusic.utils.utils import delete_file, send_song_info
 from YMusic.utils.formaters import get_readable_time, format_time
@@ -258,7 +258,7 @@ async def _vPlay(_, message):
 
             await m.edit("Mengunduh audio...")
             file_name = f"{title}"
-            audio_file, downloaded_title, audio_duration = await download_audio(link, file_name)
+            audio_file, downloaded_title, audio_duration = await download_video(link, file_name)
 
             if not audio_file:
                 return await m.edit("Gagal mengunduh audio. coba lagi.")
