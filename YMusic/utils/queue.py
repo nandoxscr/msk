@@ -17,7 +17,7 @@ def add_to_queue(chat_id, title, duration, audio_file, link, requester_name, req
             "link": link,
             "requester_name": requester_name,
             "requester_id": requester_id,
-            "is_video": False
+            "is_video": is_video
         })
         return len(QUEUE[chat_id])
 
