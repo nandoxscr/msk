@@ -37,7 +37,7 @@ async def pause(chat_id):
         await call.pause_stream(
             chat_id,
         )
-        return "Stream Paused"
+        return "⏸️"
     except Exception as e:
         return f"Error:- <code>{e}</code>"
 
@@ -47,7 +47,7 @@ async def resume(chat_id):
         await call.resume_stream(
             chat_id,
         )
-        return "Stream Resumed"
+        return "⏯️"
     except Exception as e:
         return f"Error:- <code>{e}</code>"
 
@@ -57,7 +57,7 @@ async def mute(chat_id):
         await call.mute_stream(
             chat_id,
         )
-        return "Stream Muted"
+        return ""
     except Exception as e:
         return f"Error:- <code>{e}</code>"
 
@@ -67,7 +67,7 @@ async def unmute(chat_id):
         await call.unmute_stream(
             chat_id,
         )
-        return "Stream Unmuted"
+        return ""
     except Exception as e:
         return f"Error:- <code>{e}</code>"
 
@@ -88,6 +88,6 @@ async def stop(chat_id):
         await call.leave_call(
             chat_id,
         )
-        return "Stream Ended"
+        return "Musik berhasil di akhiri"
     except Exception as e:
         return f"Error:- <code>{e}</code>"

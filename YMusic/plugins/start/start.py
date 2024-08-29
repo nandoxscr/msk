@@ -11,7 +11,7 @@ HELP_MESSAGE = f"""
 ❤️ = Admin saja
 
 **Commands:**
-💙| `{PREFIX}play [nama lagu|audio file]` - <i>Mencari musik dari youtube dan memutarnya (reply audio file)</i>
+💙| `{PREFIX}play [nama lagu|audio file]` - <i>Mencari musik dari youtube dan memutarnya</i>
 ❤️| `{PREFIX}pause` - <i>Pause musik</i>
 ❤️| `{PREFIX}resume` - <i>Resume musik</i>
 ❤️| `{PREFIX}stop` - <i>Mengakhiri musik</i>
