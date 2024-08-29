@@ -45,7 +45,10 @@ async def _aSkip(_, message):
             else:
                 next_song = get_current_song(chat_id)
                 if next_song:
-                    await userbot.playAudio(chat_id, next_song['audio_file'])
+                    if next_song['is_video']:
+                        await userbot.playVideo(chat_id, next_song['audio_file'])
+                    else:
+                        await userbot.playAudio(chat_id, next_song['audio_file'])
                     await start_play_time(chat_id)
                     await m.delete()
                     await send_song_info(chat_id, next_song)
