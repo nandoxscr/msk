@@ -3,7 +3,7 @@ from YMusic.core import userbot
 from YMusic.utils.queue import QUEUE, pop_an_item, get_queue, clear_queue, is_queue_empty, get_current_song
 from YMusic.utils.loop import get_loop
 from YMusic.misc import SUDOERS
-from YMusic.plugins.pytgcalls.pytgcalls import _skip, stop
+from YMusic.plugins.pytgcalls.pytgcalls import stop
 from YMusic.plugins.sounds.current import start_play_time, stop_play_time
 from YMusic.utils.utils import clear_downloads_cache, send_song_info
 from YMusic.utils.formaters import get_readable_time, format_time
