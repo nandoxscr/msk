@@ -20,10 +20,10 @@ TEST_COMMAND = ["T"]
 PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
 
-@app.on_message((filters.command(TEST_COMMAND, [PREFIX, RPREFIX])) & filters.group)
-async def _aTestIng(_, message):
-    chat_id = message.chat.id
-    await message.reply_text(f"Json:\n\n {QUEUE}")
+# @app.on_message((filters.command(TEST_COMMAND, [PREFIX, RPREFIX])) & filters.group)
+# async def _aTestIng(_, message):
+    # chat_id = message.chat.id
+    # await message.reply_text(f"Json:\n\n {QUEUE}")
 
 @app.on_message((filters.command(PLAY_COMMAND, [PREFIX, RPREFIX])) & filters.group)
 async def _aPlay(_, message):
