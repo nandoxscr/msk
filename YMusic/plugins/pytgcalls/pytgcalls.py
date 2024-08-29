@@ -59,6 +59,7 @@ async def handler(client: PyTgCalls, update: Update):
                             await userbot.playVideo(chat_id, next_song['audio_file'])
                         else:
                             print("Playing audio")
+                            await asyncio.sleep(2)  
                             await userbot.playAudio(chat_id, next_song['audio_file'])
                         
                         print("Starting play time")
