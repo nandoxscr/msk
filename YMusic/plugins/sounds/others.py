@@ -10,12 +10,8 @@ from YMusic.misc import SUDOERS
 import aiohttp
 import json
 import config
-from llamaapi import LlamaAPI
 
 
-# ... (keep all existing imports and code)
-
-# Add this new command to the list of commands
 PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
 
@@ -283,43 +279,42 @@ async def _nando(_, message):
             await message.reply_text(f"An error occurred: {str(e)}")
 
 
-# Initialize the LlamaAPI with your API token
-llama = LlamaAPI(config.LAMA_TOKEN)
-
 @app.on_message(filters.command(LLAMA_COMMAND, PREFIX))
-async def _llama(_, message):
+async def _nando(_, message):
     if len(message.command) < 2:
         await message.reply_text("Penggunaan: .lama [query]")
         return
 
     query = " ".join(message.command[1:])
-
-    api_request_json = {
-        "messages": [
-            {"role": "user", "content": query},
-        ],
-        "stream": False,
-    }
+    final_query = f"{query}. gunakan bahasa indonesia"
+    api_url = f"https://api.safone.dev/llama?message={final_query}"
 
     # Send loading message
-    loading_message = await message.reply_text("Memproses permintaan Anda...")
+    loading_message = await message.reply_text("Tunggu sebentar...")
 
-    try:
-        response = llama.run(api_request_json)
-        result = response.json()['choices'][0]['message']['content']
-
-        # Delete loading message
-        await loading_message.delete()
-
-        # Check if the result is too long
-        if len(result) > 4096:
-            # Split the message into chunks of 4096 characters
-            chunks = [result[i:i+4096] for i in range(0, len(result), 4096)]
-            for chunk in chunks:
-                await message.reply_text(chunk)
-        else:
-            await message.reply_text(result)
-    except Exception as e:
-        # Delete loading message
-        await loading_message.delete()
-        await message.reply_text(f"Terjadi kesalahan: {str(e)}")
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(api_url) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    result = data.get('message', 'No message received from API')
+                    
+                    # Delete loading message
+                    await loading_message.delete()
+                    
+                    # Check if the result is too long
+                    if len(result) > 4096:
+                        # Split the message into chunks of 4096 characters
+                        chunks = [result[i:i+4096] for i in range(0, len(result), 4096)]
+                        for chunk in chunks:
+                            await message.reply_text(chunk)
+                    else:
+                        await message.reply_text(result)
+                else:
+                    # Delete loading message
+                    await loading_message.delete()
+                    await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status}")
+        except Exception as e:
+            # Delete loading message
+            await loading_message.delete()
+            await message.reply_text(f"An error occurred: {str(e)}")

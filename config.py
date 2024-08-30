@@ -8,7 +8,6 @@ SESSION_STRING = getenv("SESSION_STRING")
 OWNER_ID = int(getenv("OWNER_ID", 0))
 COOK_PATH = getenv("COOK_PATH")
 MAX_DURATION_MINUTES = int(getenv("MAX_DURATION_MINUTES", 20))
-LAMA_TOKEN = getenv("LAMA_TOKEN")
 
 sudo_users_str = getenv("SUDO_USERS", "")
 SUDO_USERS = [int(x) for x in sudo_users_str.split(',') if x.strip().isdigit()] if sudo_users_str else []
