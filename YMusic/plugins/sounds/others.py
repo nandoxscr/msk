@@ -301,7 +301,7 @@ async def _nando(_, message):
                         await message.reply_text(result)
                 else:
                    await loading_message.delete()
-                    await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status}")
+                   await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status}")
         except Exception as e:
             await loading_message.delete()
             await message.reply_text(f"An error occurred: {str(e)}")
