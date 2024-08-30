@@ -25,6 +25,7 @@ HELP_MESSAGE = f"""
 **Extra:**
 🙂| `{PREFIX}lyric [nama lagu]` - <i>Mencari lirik lagu</i>
 🙂| `{PREFIX}nando [query]` - <i>Ini adalah <b>AI</b>, kamu bisa menanyakan apa saja, saya akan menjawab sebaik-baiknya</i>
+🙂| `{PREFIX}nandos [query]` - <i>Ini adalah <b>AI</b> model llama3-70b, kamu bisa menanyakan apa saja, saya akan menjawab sebaik-baiknya</i>
 
 <b>Powered by AI</b>
 <i>Made with </i>💙
