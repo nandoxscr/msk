@@ -298,24 +298,7 @@ async def _llama(_, message):
         "messages": [
             {"role": "user", "content": query},
         ],
-        "functions": [
-            {
-                "name": "get_information",
-                "description": "Get information about the user's query",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "topic": {
-                            "type": "string",
-                            "description": "The main topic of the query",
-                        },
-                    },
-                },
-                "required": ["topic"],
-            }
-        ],
         "stream": False,
-        "function_call": "get_information",
     }
 
     # Send loading message
