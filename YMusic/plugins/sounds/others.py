@@ -10,7 +10,12 @@ from YMusic.misc import SUDOERS
 import aiohttp
 import json
 import config
+from llamaapi import LlamaAPI
 
+
+# ... (keep all existing imports and code)
+
+# Add this new command to the list of commands
 PREFIX = config.PREFIX
 RPREFIX = config.RPREFIX
 
@@ -24,6 +29,7 @@ REMOVESUDO_COMMAND = ["REMOVESUDO"]
 SETMAXDURATION_COMMAND = ["SETMAXDURATION", "SMD"]
 NANDO_COMMAND = ["NANDO"]
 LYRIC_COMMAND = ["LYRIC"]
+LLAMA_COMMAND = ["LAMA"]
 
 def add_sudo(user_id: int):
     global SUDOERS
@@ -275,3 +281,62 @@ async def _nando(_, message):
         except Exception as e:
             await loading_message.delete()
             await message.reply_text(f"An error occurred: {str(e)}")
+
+
+# Initialize the LlamaAPI with your API token
+llama = LlamaAPI(config.LAMA_TOKEN)
+
+@app.on_message(filters.command(LLAMA_COMMAND, PREFIX))
+async def _llama(_, message):
+    if len(message.command) < 2:
+        await message.reply_text("Penggunaan: .lama [query]")
+        return
+
+    query = " ".join(message.command[1:])
+
+    api_request_json = {
+        "messages": [
+            {"role": "user", "content": query},
+        ],
+        "functions": [
+            {
+                "name": "get_information",
+                "description": "Get information about the user's query",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "topic": {
+                            "type": "string",
+                            "description": "The main topic of the query",
+                        },
+                    },
+                },
+                "required": ["topic"],
+            }
+        ],
+        "stream": False,
+        "function_call": "get_information",
+    }
+
+    # Send loading message
+    loading_message = await message.reply_text("Memproses permintaan Anda...")
+
+    try:
+        response = llama.run(api_request_json)
+        result = response.json()['choices'][0]['message']['content']
+
+        # Delete loading message
+        await loading_message.delete()
+
+        # Check if the result is too long
+        if len(result) > 4096:
+            # Split the message into chunks of 4096 characters
+            chunks = [result[i:i+4096] for i in range(0, len(result), 4096)]
+            for chunk in chunks:
+                await message.reply_text(chunk)
+        else:
+            await message.reply_text(result)
+    except Exception as e:
+        # Delete loading message
+        await loading_message.delete()
+        await message.reply_text(f"Terjadi kesalahan: {str(e)}")

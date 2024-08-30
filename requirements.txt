@@ -7,3 +7,4 @@ python-dotenv
 speedtest-cli
 ffprobe
 aiohttp
+llamaapi
