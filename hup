@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd /etc/a
+nohup bash start  > output.log 2>&1 & echo $! > pid.txt
+cd 
