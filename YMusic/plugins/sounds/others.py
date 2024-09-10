@@ -241,7 +241,7 @@ async def set_max_duration(client, message):
 @app.on_message(filters.command(NANDO_COMMAND, PREFIX))
 async def _gemini(_, message):
     if len(message.command) < 2:
-        await message.reply_text("Penggunaan: .gemini [query]")
+        await message.reply_text("Penggunaan: .nando [query]")
         return
 
     query = " ".join(message.command[1:])
