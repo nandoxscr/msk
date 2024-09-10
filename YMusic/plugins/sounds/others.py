@@ -204,38 +204,88 @@ async def set_max_duration(client, message):
     except ValueError:
         await message.reply_text("Durasi harus berupa angka dalam menit.")
 
+# @app.on_message(filters.command(NANDO_COMMAND, PREFIX))
+# async def _nando(_, message):
+    # if len(message.command) < 2:
+        # await message.reply_text("Penggunaan: .nando [query]")
+        # return
+
+    # query = " ".join(message.command[1:])
+    # api_url = f"https://api.safone.dev/bard?message={query}"
+
+    # loading_message = await message.reply_text("Tunggu sebentar...")
+
+    # async with aiohttp.ClientSession() as session:
+        # try:
+            # async with session.get(api_url) as response:
+                # if response.status == 200:
+                    # data = await response.json()
+                    # result = data.get('message', 'No message received from API')
+                    
+                    # await loading_message.delete()
+                    
+                    # if len(result) > 4096:
+                        # chunks = [result[i:i+4096] for i in range(0, len(result), 4096)]
+                        # for chunk in chunks:
+                            # await message.reply_text(chunk)
+                    # else:
+                        # await message.reply_text(result)
+                # else:
+                    # await loading_message.delete()
+                    # await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status}")
+        # except Exception as e:
+            # await loading_message.delete()
+            # await message.reply_text(f"An error occurred: {str(e)}")
+
 @app.on_message(filters.command(NANDO_COMMAND, PREFIX))
-async def _nando(_, message):
+async def _gemini(_, message):
     if len(message.command) < 2:
-        await message.reply_text("Penggunaan: .nando [query]")
+        await message.reply_text("Penggunaan: .gemini [query]")
         return
 
     query = " ".join(message.command[1:])
-    api_url = f"https://api.safone.dev/bard?message={query}"
+    API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+
+    headers = {
+        "Content-Type": "application/json",
+        "x-goog-api-key": config.GEMINI_API
+    }
+
+    data = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": query
+                    }
+                ]
+            }
+        ]
+    }
 
     loading_message = await message.reply_text("Tunggu sebentar...")
 
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(api_url) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    result = data.get('message', 'No message received from API')
-                    
-                    await loading_message.delete()
-                    
-                    if len(result) > 4096:
-                        chunks = [result[i:i+4096] for i in range(0, len(result), 4096)]
-                        for chunk in chunks:
-                            await message.reply_text(chunk)
-                    else:
-                        await message.reply_text(result)
-                else:
-                    await loading_message.delete()
-                    await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status}")
-        except Exception as e:
+    try:
+        response = requests.post(API_URL, headers=headers, json=data)
+        
+        if response.status_code == 200:
+            result = response.json()
+            generated_text = result['candidates'][0]['content']['parts'][0]['text']
+            
             await loading_message.delete()
-            await message.reply_text(f"An error occurred: {str(e)}")
+            
+            if len(generated_text) > 4096:
+                chunks = [generated_text[i:i+4096] for i in range(0, len(generated_text), 4096)]
+                for chunk in chunks:
+                    await message.reply_text(chunk)
+            else:
+                await message.reply_text(generated_text)
+        else:
+            await loading_message.delete()
+            await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status_code}")
+    except Exception as e:
+        await loading_message.delete()
+        await message.reply_text(f"An error occurred: {str(e)}")
 
 @app.on_message(filters.command(LYRIC_COMMAND, PREFIX))
 async def _nando(_, message):
