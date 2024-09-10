@@ -241,15 +241,16 @@ async def set_max_duration(client, message):
 @app.on_message(filters.command(NANDO_COMMAND, PREFIX))
 async def _gemini(_, message):
     if len(message.command) < 2:
-        await message.reply_text("Penggunaan: .nando [query]")
+        await message.reply_text("Penggunaan: .gemini [query]")
         return
 
     query = " ".join(message.command[1:])
+    API_KEY = config.GEMINI_API
     API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
 
     headers = {
         "Content-Type": "application/json",
-        "x-goog-api-key": config.GEMINI_API
+        "x-goog-api-key": API_KEY
     }
 
     data = {
@@ -267,61 +268,66 @@ async def _gemini(_, message):
     loading_message = await message.reply_text("Tunggu sebentar...")
 
     try:
-        response = requests.post(API_URL, headers=headers, json=data)
-        
-        if response.status_code == 200:
-            result = response.json()
-            generated_text = result['candidates'][0]['content']['parts'][0]['text']
-            
-            await loading_message.delete()
-            
-            if len(generated_text) > 4096:
-                chunks = [generated_text[i:i+4096] for i in range(0, len(generated_text), 4096)]
-                for chunk in chunks:
-                    await message.reply_text(chunk)
-            else:
-                await message.reply_text(generated_text)
-        else:
-            await loading_message.delete()
-            await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status_code}")
-    except Exception as e:
-        await loading_message.delete()
-        await message.reply_text(f"An error occurred: {str(e)}")
-
-@app.on_message(filters.command(LYRIC_COMMAND, PREFIX))
-async def _nando(_, message):
-    if len(message.command) < 2:
-        await message.reply_text(f"Penggunaan: .lyric [query]")
-        return
-
-    query = " ".join(message.command[1:])
-    api_url = f"https://api.safone.dev/lyrics?title={query}"
-
-    loading_message = await message.reply_text("Saya sedang mencarinya...")
-
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(api_url) as response:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(API_URL, headers=headers, json=data) as response:
                 if response.status == 200:
-                    data = await response.json()
-                    result = data.get('lyrics', 'No message received from API')
-                    lyrics_text = f"📜 Lirik:\n\n{result}"
-
+                    result = await response.json()
+                    generated_text = result['candidates'][0]['content']['parts'][0]['text']
+                    
                     await loading_message.delete()
                     
-                    if len(lyrics_text) > 4096:
-                        chunks = [lyrics_text[i:i+4096] for i in range(0, len(lyrics_text), 4096)]
+                    if len(generated_text) > 4096:
+                        chunks = [generated_text[i:i+4096] for i in range(0, len(generated_text), 4096)]
                         for chunk in chunks:
                             await message.reply_text(chunk)
                     else:
-                        await message.reply_text(lyrics_text)
+                        await message.reply_text(generated_text)
                 else:
+                    error_content = await response.text()
                     await loading_message.delete()
-                    await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status}")
-        except Exception as e:
-            await loading_message.delete()
-            await message.reply_text(f"An error occurred: {str(e)}")
+                    error_message = f"Error: Unable to fetch data from API. Status code: {response.status}\n"
+                    error_message += f"Error content: {error_content}"
+                    await message.reply_text(error_message)
+                    print(error_message)  # Log error untuk debugging
+    except Exception as e:
+        await loading_message.delete()
+        error_message = f"An error occurred: {str(e)}"
+        await message.reply_text(error_message)
+        print(error_message)  # Log error untuk debugging
 
+# @app.on_message(filters.command(LYRIC_COMMAND, PREFIX))
+# async def _nando(_, message):
+    # if len(message.command) < 2:
+        # await message.reply_text(f"Penggunaan: .lyric [query]")
+        # return
+
+    # query = " ".join(message.command[1:])
+    # api_url = f"https://api.safone.dev/lyrics?title={query}"
+
+    # loading_message = await message.reply_text("Saya sedang mencarinya...")
+
+    # async with aiohttp.ClientSession() as session:
+        # try:
+            # async with session.get(api_url) as response:
+                # if response.status == 200:
+                    # data = await response.json()
+                    # result = data.get('lyrics', 'No message received from API')
+                    # lyrics_text = f"📜 Lirik:\n\n{result}"
+
+                    # await loading_message.delete()
+                    
+                    # if len(lyrics_text) > 4096:
+                        # chunks = [lyrics_text[i:i+4096] for i in range(0, len(lyrics_text), 4096)]
+                        # for chunk in chunks:
+                            # await message.reply_text(chunk)
+                    # else:
+                        # await message.reply_text(lyrics_text)
+                # else:
+                    # await loading_message.delete()
+                    # await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status}")
+        # except Exception as e:
+            # await loading_message.delete()
+            # await message.reply_text(f"An error occurred: {str(e)}")
 
 # @app.on_message(filters.command(LLAMA_COMMAND, PREFIX))
 # async def _nando(_, message):
