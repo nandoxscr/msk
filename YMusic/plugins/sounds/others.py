@@ -10,6 +10,7 @@ from YMusic.misc import SUDOERS
 import aiohttp
 import json
 import config
+import request
 
 
 PREFIX = config.PREFIX
@@ -322,36 +323,36 @@ async def _nando(_, message):
             await message.reply_text(f"An error occurred: {str(e)}")
 
 
-@app.on_message(filters.command(LLAMA_COMMAND, PREFIX))
-async def _nando(_, message):
-    if len(message.command) < 2:
-        await message.reply_text("Penggunaan: .lama [query]")
-        return
+# @app.on_message(filters.command(LLAMA_COMMAND, PREFIX))
+# async def _nando(_, message):
+    # if len(message.command) < 2:
+        # await message.reply_text("Penggunaan: .lama [query]")
+        # return
 
-    query = " ".join(message.command[1:])
-    final_query = f"{query}. gunakan bahasa indonesia"
-    api_url = f"https://api.safone.dev/llama?message={final_query}"
+    # query = " ".join(message.command[1:])
+    # final_query = f"{query}. gunakan bahasa indonesia"
+    # api_url = f"https://api.safone.dev/llama?message={final_query}"
 
-    loading_message = await message.reply_text("Tunggu sebentar...")
+    # loading_message = await message.reply_text("Tunggu sebentar...")
 
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(api_url) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    result = data.get('message', 'No message received from API')
+    # async with aiohttp.ClientSession() as session:
+        # try:
+            # async with session.get(api_url) as response:
+                # if response.status == 200:
+                    # data = await response.json()
+                    # result = data.get('message', 'No message received from API')
                     
-                    await loading_message.delete()
+                    # await loading_message.delete()
                     
-                    if len(result) > 4096:
-                        chunks = [result[i:i+4096] for i in range(0, len(result), 4096)]
-                        for chunk in chunks:
-                            await message.reply_text(chunk)
-                    else:
-                        await message.reply_text(result)
-                else:
-                   await loading_message.delete()
-                   await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status}")
-        except Exception as e:
-            await loading_message.delete()
-            await message.reply_text(f"An error occurred: {str(e)}")
+                    # if len(result) > 4096:
+                        # chunks = [result[i:i+4096] for i in range(0, len(result), 4096)]
+                        # for chunk in chunks:
+                            # await message.reply_text(chunk)
+                    # else:
+                        # await message.reply_text(result)
+                # else:
+                   # await loading_message.delete()
+                   # await message.reply_text(f"Error: Unable to fetch data from API. Status code: {response.status}")
+        # except Exception as e:
+            # await loading_message.delete()
+            # await message.reply_text(f"An error occurred: {str(e)}")
