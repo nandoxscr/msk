@@ -10,7 +10,7 @@ from YMusic.misc import SUDOERS
 import aiohttp
 import json
 import config
-import request
+import requests
 
 
 PREFIX = config.PREFIX
