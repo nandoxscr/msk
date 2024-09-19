@@ -242,11 +242,19 @@ async def get_respon(user_input):
     if resp.status_code != 200:
         return f"Gagal dengan kode status {resp.status_code}"
 
-    hasil = ""
-    for baris in resp.iter_lines():
-        decoded_line = baris.decode('utf-8')
-        match = re.search(r'"out-0":"(.*?)"', decoded_line)
-        if match:
-            hasil += match.group(1)
+    output = ""
+    for line in resp.iter_lines():
+        if line:
+            decoded_line = line.decode('utf-8')
+            if decoded_line.startswith("data:"):
+                try:
+                    json_data = json.loads(decoded_line[5:].strip())
+                    if "outputs" in json_data and "out-0" in json_data["outputs"]:
+                        output += json_data["outputs"]["out-0"]
+                    elif "metadata" in json_data and "output" in json_data["metadata"]:
+                        output = json_data["metadata"]["output"]
+                        break  # Ini adalah output final, jadi kita bisa berhenti di sini
+                except json.JSONDecodeError:
+                    continue
 
-    return hasil
+    return output if output else "Tidak ada output yang ditemukan."
