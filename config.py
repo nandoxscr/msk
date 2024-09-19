@@ -9,6 +9,7 @@ OWNER_ID = int(getenv("OWNER_ID", 0))
 COOK_PATH = getenv("COOK_PATH")
 MAX_DURATION_MINUTES = int(getenv("MAX_DURATION_MINUTES", 20))
 GEMINI_API = getenv("GEMINI_API")
+STACK_AI_BEARER_TOKEN = getenv("STACK_AI_BEARER_TOKEN")
 
 sudo_users_str = getenv("SUDO_USERS", "")
 SUDO_USERS = [int(x) for x in sudo_users_str.split(',') if x.strip().isdigit()] if sudo_users_str else []
